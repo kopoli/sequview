@@ -1,0 +1,30 @@
+Suunnitelma imagelistille
+
+Algoritmi kuvien lataamiselle
+
+Annettavat tiedot:
+-tiedostolistan paikka (suhteellinen tai abs) ja tiedostolista
+-piirrettävien kuvien määrä
+-kuvalistan koko
+-laajakuvat
+
+Muistettavat tiedot:
+-paikka tiedostolistassa
+-suunta mihin päin oltiin menossa
+-kuinka monta kertaa sinnepäin ollaan menty
+
+Vaatimukset:
+-
+
+
+
+  /*
+    Suunnan vaihto:
+    Vaikutetaan näihin start ja end muuttujiin.
+    -kuitenkin:
+    start += maara*imagelist->direction;
+    end += maara*imagelist->direction;
+  */
+
+
+

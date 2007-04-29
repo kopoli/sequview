@@ -1,0 +1,18 @@
+070217
+:VERSIOON 0.0.3:
+gtk2confpages:
+ -keybindit konffattaviksi
+gtk2int:
+X -lokityyppinen erroriolet (siis ikkuna jossa näkyy uusin virhe ja 
+X  aikasemmat).
+ -kuvan scrollaus (saattaa olla myös canvasissa).
+Xcanvas:
+X -1col&1row ei toimi ?
+README:
+ -päivitys
+
+TESTAA:
+ Ultimate Spider-Man 103 (2007) (Reiu-DCP).cbr
+ -leveät kuvat
+ Ninja Scroll 05 (2007) (Ori-DCP).cbr
+ -viimeisen kuvan toiminta (kun 2 viimeistÃ¤ kuvaa on ruudulla, viimeinen nÃ¤kyy vain puoliksi)

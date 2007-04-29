@@ -1,0 +1,9 @@
+#LD_LIBRARY_PATH=/home/gobol/softa/lib
+CFLAGS="-O0 -ggdb -Wall -fno-inline -DDEBUG"
+#CFLAGS="-O0 -g -Wall -DDEBUG -D_GNU_SOURCE"
+#LDFLAGS="-L/home/gobol/softa/lib -ldmalloc"
+#CC="gcc -std=c99 -pedantic"
+#CC="/usr/i686-pc-linux-gnu/gcc-bin/2.95/gcc"
+#CC="/usr/i686-pc-linux-gnu/gcc-bin/3.4.4/gcc -std=c99"
+#CC="gcc -std=c99"
+export CFLAGS CC LD_LIBRARY_PATH LDFLAGS

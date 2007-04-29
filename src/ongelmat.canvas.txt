@@ -1,0 +1,110 @@
+tiedosto testi/testi2.cbr
+ja piirtomatriisi 1x1+1
+ei piirrä tuplakuvia ja sigsegv kun yrittää 2 kertaa siirtyä tuplakuvaan
+
+imagelist_shift_load_images: ladataan kuva 3: uxm-78-04.jpg paikkaan 1
+exec_to_pipe: suoritetaan komento [unrar -inul -- p testi/testi2.cbr 
+uxm-78-04.jpg ]
+archive_get_file: tiedoston fd on 4
+archive_get_file: Lukeminen kesti 0.056675 s
+archive_get_file: pidit par 23632 child 23661
+imagelist_shift_load_images: filepos 3 imgsdrawn 1
+imagelist_is_perfect: laskujen mukaan piirrettäviä kuvia on 1 kpl kun 
+vaad. 1
+sequ_canvas_realize: lst_start 0 lst_count 2
+ #0: [2048x1493] row 1 wc 2 => drawn 0
+ #1: [1024x1501] row 1 wc 1 => drawn 0
+sequ_canvas_realize: TYHJÄÄ TILAA rwc 0 cols 1
+==23632== 
+==23632== Invalid read of size 4
+==23632==    at 0x40F9D3: sequ_canvas_realize (canvas.c:258)
+==23632==    by 0x40B5E3: redraw_canvas (gtk2int.c:288)
+==23632==    by 0x40B646: redraw_load_new (gtk2int.c:300)
+==23632==    by 0x40BD14: change_page (gtk2int.c:544)
+==23632==    by 0x40D07F: gtk2_gui_callback_canvas_eventhandler 
+(gtk2int.c:1128)
+==23632==    by 0x4DB7D4C: (within 
+/usr/lib64/libgtk-x11-2.0.so.0.1000.9)
+==23632==    by 0x59DC0B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==23632==    by 0x59EBDF0: (within 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==23632==    by 0x59ECE6D: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==23632==    by 0x59ED282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==23632==    by 0x4EB1867: (within 
+/usr/lib64/libgtk-x11-2.0.so.0.1000.9)
+==23632==    by 0x4DB133D: gtk_propagate_event (in 
+/usr/lib64/libgtk-x11-2.0.so.0.1000.9)
+==23632==  Address 0x1807412188 is not stack'd, malloc'd or (recently) 
+free'd
+==23632== 
+==23632== Process terminating with default action of signal 11 (SIGSEGV)
+==23632==  Access not within mapped region at address 0x1807412188
+==23632==    at 0x40F9D3: sequ_canvas_realize (canvas.c:258)
+==23632==    by 0x40B5E3: redraw_canvas (gtk2int.c:288)
+==23632==    by 0x40B646: redraw_load_new (gtk2int.c:300)
+==23632==    by 0x40BD14: change_page (gtk2int.c:544)
+==23632==    by 0x40D07F: gtk2_gui_callback_canvas_eventhandler 
+(gtk2int.c:1128)
+==23632==    by 0x4DB7D4C: (within 
+/usr/lib64/libgtk-x11-2.0.so.0.1000.9)
+==23632==    by 0x59DC0B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==23632==    by 0x59EBDF0: (within 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==23632==    by 0x59ECE6D: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==23632==    by 0x59ED282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==23632==    by 0x4EB1867: (within 
+/usr/lib64/libgtk-x11-2.0.so.0.1000.9)
+==23632==    by 0x4DB133D: gtk_propagate_event (in 
+/usr/lib64/libgtk-x11-2.0.so.0.1000.9)
+
+
+...........................................................
+
+KORJATTU
+tiedosto testi/nuolet.cbtz
+ja piirtomatriisi 1x1+1
+-ei piirrä ja muilla tiedostoilla kaatuu
+
+sequ_canvas_realize: lst_start 0 lst_count 1
+ #0: [300x420] row 0 wc 1 => drawn 1
+sequ_canvas_realize: canvas [300x0] -> [600x0] viewport [600x400] slot 
+[600x0]
+ %0: [300x420]=>[0x0] @ 0x200
+==22671== 
+==22671== Invalid read of size 4
+==22671==    at 0x410147: sequ_canvas_realize (canvas.c:320)
+==22671==    by 0x40B5F3: redraw_canvas (gtk2int.c:288)
+==22671==    by 0x40BE03: gtk2_gui_run (gtk2int.c:573)
+==22671==    by 0x40A410: main (main.c:199)
+==22671==  Address 0x837C77C is 4 bytes after a block of size 24 alloc'd
+==22671==    at 0x4A20B4B: malloc (in 
+/usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==22671==    by 0x40F59A: sequ_canvas_realize (canvas.c:186)
+==22671==    by 0x40B5F3: redraw_canvas (gtk2int.c:288)
+==22671==    by 0x40BE03: gtk2_gui_run (gtk2int.c:573)
+==22671==    by 0x40A410: main (main.c:199)
+==22671== 
+==22671== Conditional jump or move depends on uninitialised value(s)
+==22671==    at 0x4101DD: sequ_canvas_draw (canvas.c:374)
+==22671==    by 0x40B606: redraw_canvas (gtk2int.c:289)
+==22671==    by 0x40BE03: gtk2_gui_run (gtk2int.c:573)
+==22671==    by 0x40A410: main (main.c:199)
+==22671== 
+==22671== Conditional jump or move depends on uninitialised value(s)
+==22671==    at 0x410254: sequ_canvas_draw (canvas.c:376)
+==22671==    by 0x40B606: redraw_canvas (gtk2int.c:289)
+==22671==    by 0x40BE03: gtk2_gui_run (gtk2int.c:573)
+==22671==    by 0x40A410: main (main.c:199)
+==22671== 
+==22671== Conditional jump or move depends on uninitialised value(s)
+==22671==    at 0x41027B: sequ_canvas_draw (canvas.c:376)
+==22671==    by 0x40B606: redraw_canvas (gtk2int.c:289)
+==22671==    by 0x40BE03: gtk2_gui_run (gtk2int.c:573)
+==22671==    by 0x40A410: main (main.c:199)
+

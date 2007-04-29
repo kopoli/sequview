@@ -1,0 +1,146 @@
+
+070309 Suunnitelma canvasin uusimiselle
+
+Ongelmia vanhassa:
+-bugittaa, ja ‰rsytt‰v‰n vaikea korjata
+-sequ_canvas_props, ei saatana seis (pit‰‰ yhdist‰‰)
+-jokin viewport-ominaisuus tarvitaan
+-huonosti dokumentoitu
+
+
+Uusia ominaisuuksia
+-parempi kommentointi
+-T‰m‰ plan s‰ilytett‰v‰ (sis‰lt‰en layoutalgoritmin)
+-yhdistet‰‰n sequ_canvas_props suoraan sequ_canvas-rakenteeseen
+-viewport funktio: 
+ #void sequ_canvas_viewport_pos(sequ_canvas *seqc,int x, int y)
+ #  {seqc->view_x=x;seqc->view_y=y;}
+ #-tai sitten yhdistettyn‰ sequ_canvas_draw-funktioon.
+ -viewport-funktio voi k‰ytt‰‰ myˆs x ja y suhteellisia sijainteja
+  (kohta s‰ilyy muistissa, miss‰ oltiin)
+ -viewportin toiminnallisuus:
+  -vain fit-piirtotyylill‰ n‰kym‰ on kanvasin kokoinen
+  -muilla piirtotyyleill‰ kuvan koko on eri kuin n‰kym‰n koko (t‰h‰n 
+   suhteelliset n‰kym‰n koordinaatit ovat hyv‰t)
+  
+-poistetaan rakenteesta imagelist ja wide (lˆytyy imagelistista ja tarvitaan
+ vain piirron aikana)
+
+TARKOITUS
+Piirt‰‰ imagelist halutulla tavalla haluttuun paikkaan (X drawable)
+
+kuvien asettelurakenne (jokaiselle kuvalle)
+struct dims 
+{
+ int wc; //kuinka leve‰ kuva on (vaihtoehdot 1 ja 2)
+ int row;  //lasketaan mod col ja otetaan huomioon laajat kuvat
+
+ //yksitt‰isen kuvan koko ja paikka skaalattuna
+ uint w,h;
+ uint x,y;
+}
+
+Piirtoalgoritmin osat:
+-otetaan selv‰‰ imagelistilta mitk‰ kuvat pit‰‰ piirt‰‰
+ -kuvat per‰kk‰in, alkaen jostain kohdasta listaa
+ -lasketaan paikat *positions:ssa, mitk‰ eiv‰t ole -1 alkaen alkukohdasta
+ =>kuvien lukum‰‰r‰ listalla, alkukohta
+-lasketaan kuvien lukum‰‰r‰
+ -lasketaan kuvien rivit
+  pos=0; row=0;
+  for all images: 
+    if wide(image): img->wc=2 else: img->wc=1
+    if pos+img->wc >= maxcol: row++; pos=(pos+img->wc) % maxcol;
+    img->row=row;
+  =>jokaiselle kuvalle leveys ja rivi (wc row). 
+    row voi olla suurempi kuin maxrow (jolloin ei piirret‰)
+ -piirrett‰vien kuvien lukum‰‰r‰
+  lasketaan kuvien lukum‰‰r‰, joiden row < maxrow
+ =>kuvien lukum‰‰r‰, kuvien rivit ja leveydet
+-lasketaan kuvien paikat ja koot
+ -luetaan jokaisesta kuvasta width ja height
+  =>jokaiselle kuvalle w ja h
+ -lasketaan kanvasin koko
+  -lasketaan levein rivi ja lasketaan yhteen korkeimmat kuvat joka sarakkeesta
+   maxw=maxh=row=col=rw=ch=0;
+
+   for all images && img->row < maxrow: //etsit‰‰n levein rivi
+     if(img->h > ch): ch=img->h;
+     if(img->row == row): rw+=img->w;   //summataan rivin leveys
+     else: 
+       if(rw > maxw):{maxw=rw;} 
+       rw=img->w; 
+       row=++;
+       maxh+=ch;
+
+#   for b<maxcol                         //etsit‰‰n korkein sarake
+#     cs=0;
+#     for g<maxrow
+#       pos+=img->wc
+#       if(pos>b) cs+=img->w; next_row(); pos=0;
+#       else: img++;
+#     if(cs > maxh): maxh=cs;
+#   next_row(row): while img->row == row: img++; //etsit‰‰n seuraava rivi
+
+   =>kanvasin maksimikoko maxw ja maxh
+
+  -skaalaustyypit
+   maxr=maxh/maxw;
+   -kerroinskaalaus
+    maxw*=kerroin; maxh*=kerroin;
+   -jos implisiittinen sovitus
+    if(seqc->prp.view_height/seqc->prp.view_width > maxr): leveys else: korkeus
+   -sovita leveys
+     maxw=seqc->prp.view_width;
+     maxh=seqc->prp.view_width*maxr;
+   -sovita korkeus
+     maxw=seqc->prp.view_height/maxr;
+     maxh=seqc->prp.view_height;
+
+  -jaetaan laatikoihin
+   slotw=maxw/maxrow
+   sloth=maxh/maxcol
+   =>saadaan kuvien maksimikoko slotw*img->wc ja sloth
+
+  -sovitetaan kukin kuva laatikkoon
+#   imgr=(maxh/maxw)/maxr; //tuo maxr sis‰lt‰‰ vanhan ration
+#   img->w*=imgr;
+#   img->h*=imgr;
+
+   edell‰olevalla algoritmill‰ (implisiittinen sovitus)
+   =>kuvien koot img->w ja img->h
+
+  -kuvien paikat:
+   paikat laatikoiden sis‰ll‰
+   jos vasen sarake: img->x=slotw*img->wc-img->x
+   jos oikea sarake: img->x=0;
+   muuten:           img->x=(slotw*img->wc-img->x)/2
+
+   jos ensimm‰inen rivi: img->y=sloth-img->y
+   jos viimeinen rivi:   img->y=0;
+   muuten:               img->y=(sloth-img->y)/2
+
+   -jos k‰ytet‰‰n kuvien kokoja (ei j‰‰ v‰lej‰)
+    rivinvaihdossa ja alussa: posx=0;
+    riviss‰: img->x=posx; posx+=img->x;
+
+    eka rivi: posy=0;
+    aina riveiss‰: img->y=posy; if img->w > maxh: maxh=img->w;
+    rivinvaihdossa: posy+=maxh;
+
+   muutetaan koordinaatit oikeiksi koordinaateiksi
+   basex=basey=row=0;
+   for all images
+     if img->row != row: 
+       row=img->row
+       basey+=sloth
+       basex=0
+
+     img->x+=basex
+     img->y+=basey
+
+     basex+=slotw*img->wc
+   =>kuvien oikeat koordinaatit img->x ja img->y
+T‰ytyy saada tiet‰‰: kuvien paikat (x&y) ja koot (w&h)
+
+

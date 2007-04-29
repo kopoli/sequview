@@ -1,0 +1,229 @@
+
+
+
+tiedosto kaataa ohjelman:
+Welcome to Tranquility 04 (Gene Ha variant cover) (2007) (Team-DCP).cbr
+Ei pitäisi olla hajalla
+
+Valgrind sanoo:
+
+Täällä annettu count 2 ja oikea 3
+==2674== 
+==2674== Invalid read of size 4
+==2674==    at 0x40F2B2: sequ_canvas_calculate_layout (canvas.c:151)
+==2674==    by 0x410BBB: sequ_canvas_draw_imagelist (canvas.c:475)
+==2674==    by 0x410D71: sequ_canvas_draw (canvas.c:507)
+==2674==    by 0x40B597: redraw_canvas (gtk2int.c:286)
+==2674==    by 0x40B5E7: redraw_load_new (gtk2int.c:296)
+==2674==    by 0x40BCDE: change_page (gtk2int.c:533)
+==2674==    by 0x40D049: gtk2_gui_callback_canvas_eventhandler 
+(gtk2int.c:1117)
+==2674==    by 0x5045D4C: (within /usr/lib64/libgtk-x11-2.0.so.0.1000.9)
+==2674==    by 0x5C6A0B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==2674==    by 0x5C79DF0: (within /usr/lib64/libgobject-2.0.so.0.1200.9)
+==2674==    by 0x5C7AE6D: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==2674==    by 0x5C7B282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==2674==  Address 0x8 is not stack'd, malloc'd or (recently) free'd
+
+ja
+==2674== Process terminating with default action of signal 11 (SIGSEGV)
+==2674==  Access not within mapped region at address 0x8
+==2674==    at 0x40F2B2: sequ_canvas_calculate_layout (canvas.c:151)
+==2674==    by 0x410BBB: sequ_canvas_draw_imagelist (canvas.c:475)
+==2674==    by 0x410D71: sequ_canvas_draw (canvas.c:507)
+==2674==    by 0x40B597: redraw_canvas (gtk2int.c:286)
+==2674==    by 0x40B5E7: redraw_load_new (gtk2int.c:296)
+==2674==    by 0x40BCDE: change_page (gtk2int.c:533)
+==2674==    by 0x40D049: gtk2_gui_callback_canvas_eventhandler 
+(gtk2int.c:1117)
+==2674==    by 0x5045D4C: (within /usr/lib64/libgtk-x11-2.0.so.0.1000.9)
+==2674==    by 0x5C6A0B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==2674==    by 0x5C79DF0: (within /usr/lib64/libgobject-2.0.so.0.1200.9)
+==2674==    by 0x5C7AE6D: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+==2674==    by 0x5C7B282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.9)
+
+
+.................................................
+
+EI KAADU ENÄÄ: TARKASTA VUOTAAKO MUISTIA
+tiedosto kaataa ohjelman:
+Anita Blake 01 (3rd Print Covers) (Random-DCP).cbr
+Tämä on hajalla oleva tiedosto
+
+Valgrind sanoo:
+
+==19574== Invalid read of size 4
+==19574==    at 0x40F06E: sequ_canvas_calculate_layout (canvas.c:151)
+==19574==    by 0x410977: sequ_canvas_draw_imagelist (canvas.c:475)
+==19574==    by 0x410B2D: sequ_canvas_draw (canvas.c:507)
+==19574==    by 0x40B4A3: redraw_canvas (gtk2int.c:283)
+==19574==    by 0x40BCBF: gtk2_gui_run (gtk2int.c:566)
+==19574==    by 0x40A31C: main (main.c:199)
+==19574==  Address 0x8 is not stack'd, malloc'd or (recently) free'd
+
+jonka jälkeen sigsegv
+
+ongelma johtuu siitä, että tiedostossa imagelist.c:451 rar ei pysty 
+purkamaan tiedostoa ja lopettaa imagelist_shift_load_images -funktion 
+ennen aikojaan, jolloin imagelist->images ja imagelist->positions ei 
+tule täyteen.
+
+
+.................................................
+
+TOIMII
+kaatuu kun ladataan iso tiedosto ja sitten ladataan 2 sivun tiedosto
+kun rullataan eteenpäin: sigsegv
+
+==10300== Invalid read of size 4
+==10300==    at 0x40EE4E: sequ_canvas_calculate_layout (canvas.c:134)
+==10300==    by 0x410757: sequ_canvas_draw_imagelist (canvas.c:458)
+==10300==    by 0x41090D: sequ_canvas_draw (canvas.c:490)
+==10300==    by 0x40B42B: redraw_canvas (gtk2int.c:313)
+==10300==    by 0x40B47B: redraw_load_new (gtk2int.c:323)
+==10300==    by 0x40BB72: change_page (gtk2int.c:560)
+==10300==    by 0x40CEB4: gtk2_gui_callback_canvas_eventhandler 
+(gtk2int.c:1151)
+==10300==    by 0x50452FC: (within 
+/usr/lib64/libgtk-x11-2.0.so.0.1000.6)
+==10300==    by 0x5C6A0B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==10300==    by 0x5C79DF0: (within 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==10300==    by 0x5C7AE6D: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==10300==    by 0x5C7B282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==10300==  Address 0x8 is not stack'd, malloc'd or (recently) free'd
+
+==10300==    at 0x40EE4E: sequ_canvas_calculate_layout (canvas.c:134)
+==10300==    by 0x410757: sequ_canvas_draw_imagelist (canvas.c:458)
+==10300==    by 0x41090D: sequ_canvas_draw (canvas.c:490)
+==10300==    by 0x40B42B: redraw_canvas (gtk2int.c:313)
+==10300==    by 0x40B47B: redraw_load_new (gtk2int.c:323)
+==10300==    by 0x40BB72: change_page (gtk2int.c:560)
+==10300==    by 0x40CEB4: gtk2_gui_callback_canvas_eventhandler 
+(gtk2int.c:1151)
+==10300==    by 0x50452FC: (within 
+/usr/lib64/libgtk-x11-2.0.so.0.1000.6)
+==10300==    by 0x5C6A0B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==10300==    by 0x5C79DF0: (within 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==10300==    by 0x5C7AE6D: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==10300==    by 0x5C7B282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+
+.................................................
+
+TOIMII
+käynnistyessä:
+
+==27185== Conditional jump or move depends on uninitialised value(s)
+==27185==    at 0x40ED57: sequ_canvas_calculate_layout (canvas.c:167)
+==27185==    by 0x410507: sequ_canvas_draw_imagelist (canvas.c:460)
+==27185==    by 0x4106BD: sequ_canvas_draw (canvas.c:492)
+==27185==    by 0x40B3DF: redraw_canvas (gtk2int2.c:327)
+==27185==    by 0x40BBD1: gtk2_gui_run (gtk2int2.c:619)
+==27185==    by 0x40A25B: main (main.c:177)
+==27185== 
+==27185== Conditional jump or move depends on uninitialised value(s)
+==27185==    at 0x40F24A: sequ_canvas_calculate_layout (canvas.c:237)
+==27185==    by 0x410507: sequ_canvas_draw_imagelist (canvas.c:460)
+==27185==    by 0x4106BD: sequ_canvas_draw (canvas.c:492)
+==27185==    by 0x40B3DF: redraw_canvas (gtk2int2.c:327)
+==27185==    by 0x40BBD1: gtk2_gui_run (gtk2int2.c:619)
+==27185==    by 0x40A25B: main (main.c:177)
+
+vaihdettaessa tiedostoa:
+==27185== Conditional jump or move depends on uninitialised value(s)
+==27185==    at 0x40ED57: sequ_canvas_calculate_layout (canvas.c:167)
+==27185==    by 0x410507: sequ_canvas_draw_imagelist (canvas.c:460)
+==27185==    by 0x4106BD: sequ_canvas_draw (canvas.c:492)
+==27185==    by 0x40D198: gtk2_gui_callback_get_files (gtk2int2.c:1301)
+==27185==    by 0x5C690B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C78DF0: (within 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C7A0A4: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C7A282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C690B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C78DF0: (within 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C7A0A4: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C7A282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+
+==27185== Conditional jump or move depends on uninitialised value(s)
+==27185==    at 0x40F24A: sequ_canvas_calculate_layout (canvas.c:237)
+==27185==    by 0x410507: sequ_canvas_draw_imagelist (canvas.c:460)
+==27185==    by 0x4106BD: sequ_canvas_draw (canvas.c:492)
+==27185==    by 0x40D198: gtk2_gui_callback_get_files (gtk2int2.c:1301)
+==27185==    by 0x5C690B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C78DF0: (within 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C7A0A4: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C7A282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C690B8: g_closure_invoke (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C78DF0: (within 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C7A0A4: g_signal_emit_valist (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+==27185==    by 0x5C7A282: g_signal_emit (in 
+/usr/lib64/libgobject-2.0.so.0.1200.7)
+
+
+muistivuotoja (uuden tiedoston avaamisen jälkeen):
+==27185== 12 bytes in 1 blocks are definitely lost in loss record 17 of 
+186
+==27185==    at 0x4A1FAFB: malloc (in 
+/usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==27185==    by 0x40DB29: imagelist_resize (imagelist.c:67)
+==27185==    by 0x40DDA9: imagelist_create (imagelist.c:142)
+==27185==    by 0x40B8F3: gtk2_gui_load_create_canvas (gtk2int2.c:512)
+==27185==    by 0x40BBC8: gtk2_gui_run (gtk2int2.c:618)
+==27185==    by 0x40A25B: main (main.c:177)
+
+==27185== 510 (24 direct, 486 indirect) bytes in 1 blocks are definitely 
+lost in loss record 101 of 186
+==27185==    at 0x4A1FAFB: malloc (in 
+/usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==27185==    by 0x40DB3D: imagelist_resize (imagelist.c:68)
+==27185==    by 0x40DDA9: imagelist_create (imagelist.c:142)
+==27185==    by 0x40B8F3: gtk2_gui_load_create_canvas (gtk2int2.c:512)
+==27185==    by 0x40BBC8: gtk2_gui_run (gtk2int2.c:618)
+==27185==    by 0x40A25B: main (main.c:177)
+
+
+==27185== 13,037,568 bytes in 2 blocks are possibly lost in loss record 
+186 of 186
+==27185==    at 0x4A1FAFB: malloc (in 
+/usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==27185==    by 0x90EB679: load (in /usr/lib64/imlib2/loaders/jpeg.so)
+==27185==    by 0x4B46AFB: (within /usr/lib64/libImlib2.so.1.3.0)
+==27185==    by 0x4B33E46: imlib_load_image_immediately_without_cache 
+(in /usr/lib64/libImlib2.so.1.3.0)
+==27185==    by 0x40D776: im2_image_open (im2int.c:67)
+==27185==    by 0x40E776: imagelist_shift_load_images (imagelist.c:423)
+==27185==    by 0x40E876: imagelist_page_set (imagelist.c:458)
+==27185==    by 0x40DDF4: imagelist_create (imagelist.c:158)
+==27185==    by 0x40B8F3: gtk2_gui_load_create_canvas (gtk2int2.c:512)
+==27185==    by 0x40BBC8: gtk2_gui_run (gtk2int2.c:618)
+==27185==    by 0x40A25B: main (main.c:177)
+
+
