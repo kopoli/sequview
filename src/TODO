@@ -1,3 +1,8 @@
+070610
+:VERSIOON 0.0.4
+gtk2confpages,gtk2int
+ -piirtokirjasto valittavaksi im2int gdkpixbufint
+
 070217
 :VERSIOON 0.0.3:
 gtk2confpages:
@@ -5,7 +10,7 @@ gtk2confpages:
 gtk2int:
 X -lokityyppinen erroriolet (siis ikkuna jossa näkyy uusin virhe ja 
 X  aikasemmat).
- -kuvan scrollaus (saattaa olla myös canvasissa).
+X -kuvan scrollaus (saattaa olla myös canvasissa).
 Xcanvas:
 X -1col&1row ei toimi ?
 README:

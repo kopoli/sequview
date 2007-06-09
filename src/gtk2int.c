@@ -45,7 +45,9 @@
 #include "tmpfile.h"
 #include "configvars.h"
 
+#include "gdkpixbufint.h"
 #include "im2int.h"
+
 #include "imagelist.h"
 #include "canvas.h"
 
@@ -178,6 +180,8 @@ sequ_gui *gtk2_gui_create(int *argc,char ***argv, int width, int height)
   ret->private=gtkui;
 
   /* initialize imlib */
+#warning katso mikä kirjasto on käytössä
+  //gtkui->lib=(sequ_image_lib *)&gdkpixbuf_lib;
   gtkui->lib=(sequ_image_lib *)&im2_lib;
   gtkui->lib->init(gdk_x11_get_default_xdisplay());
 

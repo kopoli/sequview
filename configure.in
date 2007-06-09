@@ -86,7 +86,7 @@ PKG_CHECK_MODULES([IM2], [$imlib2_modules])
 #  AC_DEFINE_UNQUOTED(GTK2_WINDOW_FULLSCREEN, 1)
 #fi
 
-gtk_modules="glib-2.0 >= 2.4.0 gtk+-2.0 >= 2.4.0"
+gtk_modules="glib-2.0 >= 2.4.0 gtk+-2.0 >= 2.4.0 gdk-pixbuf-xlib-2.0 >= 2.4.0"
 PKG_CHECK_MODULES([GTK2], [$gtk_modules])
 
 #########################################################
@@ -100,7 +100,7 @@ imlib2_ver=`${pkg_config} --modversion imlib2`
 gtk2_ver=`${pkg_config} --modversion gtk+-2.0`
 
 #temporary
-real_version="${PACKAGE_VERSION}-rc2"
+real_version="${PACKAGE_VERSION}-rc3"
 
 AC_DEFINE_UNQUOTED(REAL_VERSION, "${real_version}",[An irritating workaround.])
 AC_DEFINE_UNQUOTED(IMLIB2_VERSION, "${imlib2_ver}",[ ])

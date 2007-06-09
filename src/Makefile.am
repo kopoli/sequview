@@ -19,6 +19,7 @@ sequview_SOURCES =  archive.c archive.h \
   gtk2int.c gtk2int.h gtk2error.c gtk2error.h\
   util.c util.h imagelib.h im2int.c im2int.h imagelist.h imagelist.c \
   canvas.c canvas.h \
+  gdkpixbufint.c gdkpixbufint.h \
   common/conf.h common/conf.c common/iolet.c common/llist.c \
   common/useful.h common/useful.c common/file.h common/file.c  \
   common/iolet.h common/llist.h common/gen_cli.c common/gen_cli.h \

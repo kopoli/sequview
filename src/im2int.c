@@ -97,6 +97,8 @@ static struct sequ_image *im2_image_open(char *name)
     return NULL;
   }
 
+  print_debug("%s: kuvan osoite on %p\n",THIS_FUNCTION,img);
+
   /* construct the image */
   ret=malloc(sizeof(sequ_image));
   img_from_im2(ret,img);
@@ -128,6 +130,9 @@ static tvalue im2_blend(struct sequ_image *from, struct sequ_image *to,
   imlib_blend_image_onto_image((Imlib_Image)from->privdata,
     0,0,0,
     from->width,from->height,x,y,w,h);
+
+  print_debug("%s: kuvan osoite on %p\n",THIS_FUNCTION,
+    (Imlib_Image)from->privdata);
 
   return TRUE;
 }
@@ -169,7 +174,7 @@ static struct sequ_image *im2_resize(struct sequ_image *old,int w, int h)
   return old;
 }
 
-tvalue im2_blank_image(struct sequ_image *img)
+static tvalue im2_blank_image(struct sequ_image *img)
 {
   if(!img)
     return FALSE;

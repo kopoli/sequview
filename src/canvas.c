@@ -115,8 +115,8 @@ static void image_fit(
 
   if(type == 1)
   {
-    *end_w=target_w;
     *end_h=target_w*source_r;
+    *end_w=target_w;
   }
   else
   {
@@ -128,7 +128,7 @@ static void image_fit(
 struct dims
 {
   int wc;  /* width of the image in slots */
-  int row;
+  int row; /* in which row the image resides */
 
   unsigned int w; 
   unsigned int h;
@@ -146,6 +146,8 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
   struct dims *img;
 
   unsigned int imgs_drawn;
+
+  unsigned int img_w_mean=0,img_h_mean=0;
 
   unsigned int canvas_w,canvas_h;
   unsigned int canvas_resize_w,canvas_resize_h;
@@ -204,9 +206,16 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
     else
       pos+=img[beta].wc;
 
-    /* the number of images to be drawn */
-    if(row < seqc->prp.rows) 
+    /* if the image is drawn */
+    if(row < seqc->prp.rows)
+    {
+      /* the mean */
+      img_w_mean+=img[beta].w;
+      img_h_mean+=img[beta].h;
+      
+      /* the number of images to be drawn */
       imgs_drawn++;
+    }
 
     img[beta].row=row;
 
@@ -214,6 +223,15 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
       beta,img[beta].w,img[beta].h,img[beta].row,img[beta].wc,pos, 
       (row < seqc->prp.rows));
   }
+
+  /* fit images to the mean of images' sizes */
+  img_w_mean /= imgs_drawn;
+  img_h_mean /= imgs_drawn;
+  
+  for(unsigned int beta=lst_start;beta<lst_count;beta++)
+    image_fit(img[beta].w,img[beta].h,
+      img_w_mean,img_h_mean,
+      &img[beta].w,&img[beta].h,0);
 
   /* calculate the canvas' size */
   canvas_h=canvas_w=0;
@@ -265,7 +283,8 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
     }
   }
 
-  print_debug("%s: canvas [%dx%d] -> ",THIS_FUNCTION,canvas_w,canvas_h);
+  print_debug("%s: img_mean [%dx%d] canvas [%dx%d] -> ",
+    THIS_FUNCTION,img_w_mean,img_h_mean,canvas_w,canvas_h);
 
   /* resize the canvas */
   if(seqc->prp.draw_fitstyle == SEQU_CFG_DRAW_CANVAS_SCALE)
@@ -274,7 +293,7 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
     canvas_resize_h=canvas_h*seqc->prp.draw_scale_factor;
   }
   else
-    /* fit the image into the viewport */
+    /* fit the canvas into the viewport */
     image_fit(canvas_w,canvas_h,seqc->prp.view_width,seqc->prp.view_height,
       &canvas_resize_w,&canvas_resize_h,
       seqc->prp.draw_fitstyle-1);
@@ -320,8 +339,9 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
   /* center the canvas into the viewport if canvas is smaller */
   if(seqc->prp.view_width > canvas_resize_w)
     basex=(seqc->prp.view_width-canvas_resize_w)/2;
-  if(seqc->prp.view_height > slot_h*seqc->prp.rows)
-    basey=(seqc->prp.view_height-slot_h*seqc->prp.rows)/2;
+  if(seqc->prp.view_height > canvas_resize_h)
+    //    basey=(seqc->prp.view_height-slot_h*seqc->prp.rows)/2;
+    basey=(seqc->prp.view_height-canvas_resize_h)/2;
   
 
   print_debug("%s: Alussa base [%dx%d]\n",THIS_FUNCTION,basex,basey);
@@ -365,7 +385,6 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
     lib->blend_to_image(list->images[beta+lst_start],seqc->canvas,
       img[beta].x,img[beta].y,img[beta].w,img[beta].h);
   }
-
 
   nullify(img);
 
