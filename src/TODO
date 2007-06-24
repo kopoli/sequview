@@ -6,16 +6,16 @@ gtk2confpages,gtk2int
 
 070217
 :VERSIOON 0.0.3:
-gtk2confpages:
- -keybindit konffattaviksi
-gtk2int:
+Xgtk2confpages:
+X -keybindit konffattaviksi
+Xgtk2int:
 X -lokityyppinen erroriolet (siis ikkuna jossa n�kyy uusin virhe ja 
 X  aikasemmat).
 X -kuvan scrollaus (saattaa olla my�s canvasissa).
 Xcanvas:
 X -1col&1row ei toimi ?
-README:
- -p�ivitys
+XREADME:
+X -p�ivitys
 
 BUGEJA:
 -kun siirrytään loppuun, ei siirrytä näyttämään viimeistä kuvaa 

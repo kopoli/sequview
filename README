@@ -1,17 +1,19 @@
 Sequview - sequential image viewer
 
-README Updated 20070410
+README Updated 20070625
 
 Description:
 
 Sequview is a program for viewing multiple images within directories or 
 compressed archives.
 
+
 Requirements:
 
 Libraries:
 Gtk+2   2.4.0
 Imlib2  1.1.2
+
 
 Filetypes:
 
@@ -35,4 +37,18 @@ TAR gz/bz2
 some version of tar that supports piping through the decompression 
 programs in one command.
 tested: GNU tar 1.15.1 with bzip2 1.0.4 and gzip 1.3.11
+
+
+Installation:
+
+The normal procedure should work:
+
+./configure
+make
+
+The name of the generated binary is "sequview". It can be run straight 
+from the src/ -directory.
+
+The program generates directory ~/.sequview where it stores the 
+configuration and the temporary files.
 

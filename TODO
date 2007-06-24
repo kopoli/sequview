@@ -1,0 +1,11 @@
+TODO 20070625
+
+Urgent:
+-the Imlib2 and gdkpixbuf -imagelibraries should be selectable 
+ (gtk2int.c gtk2config.c).
+
+
+Secondary:
+-Most of the source needs a cleanup.
+-Fix the bugs in the canvas layout algorithm (canvas.c).
+
