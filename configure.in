@@ -21,7 +21,6 @@ AC_PROG_LN_S
 # Checks for libraries.
 AC_GNU_SOURCE
 
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
@@ -100,7 +99,7 @@ imlib2_ver=`${pkg_config} --modversion imlib2`
 gtk2_ver=`${pkg_config} --modversion gtk+-2.0`
 
 #temporary
-real_version="${PACKAGE_VERSION}-rc3"
+real_version="${PACKAGE_VERSION}-b1"
 
 AC_DEFINE_UNQUOTED(REAL_VERSION, "${real_version}",[An irritating workaround.])
 AC_DEFINE_UNQUOTED(IMLIB2_VERSION, "${imlib2_ver}",[ ])
@@ -124,9 +123,6 @@ AC_OUTPUT
 
 #########################################################
 
-#fs="no";
-#test "$gtk2_fullscreen" = "1" && fs="yes"
-
 #the summary
 echo ""
 echo ""
@@ -136,7 +132,6 @@ echo "  Compiler:               ${CC}"
 echo "  Target directory:       ${prefix}"
 echo "  Imlib2 version:         ${imlib2_ver}"
 echo "  GTK+2 version:          ${gtk2_ver}"
-#echo "   fullscreen enabled:    ${fs}"
 echo ""
 #bug-prone trickery
 if test "x$cflags_b" != x -o "x$ldflags_b" != x -o "x$cppflags_b" != x; then

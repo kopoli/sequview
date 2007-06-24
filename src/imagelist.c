@@ -338,7 +338,9 @@ static int imagelist_shift_load_images(image_list *imagelist,
   /* if position changed */
   if((diff=filepos-priv->last_pos) != 0)
   {
+#ifdef DEBUG
     int lasts=priv->times_shifted;
+#endif
 
     priv->last_pos=filepos;
 

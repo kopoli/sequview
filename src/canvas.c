@@ -228,7 +228,7 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
   img_w_mean /= imgs_drawn;
   img_h_mean /= imgs_drawn;
   
-  for(unsigned int beta=lst_start;beta<lst_count;beta++)
+  for(unsigned int beta=0;beta<lst_count;beta++)
     image_fit(img[beta].w,img[beta].h,
       img_w_mean,img_h_mean,
       &img[beta].w,&img[beta].h,0);

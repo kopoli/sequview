@@ -62,6 +62,7 @@ extern char *sequ_config_generated_config_file_path;
 extern char *sequ_config_generated_tmpfile_dir_path;
 
 extern char **sequ_config_gtk_gui_keys;
+extern const char *sequ_config_gtk_gui_keys_names[];
 
 extern archive_cmd *sequ_config_archive_cmds;
 

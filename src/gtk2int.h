@@ -29,8 +29,6 @@
 #include <common/defines.h>
 #include "gui.h"
 
-extern char *gtk2_gui_keys[];
-
 sequ_gui *gtk2_gui_create(int *argc,char ***argv, int width, int height);
 tvalue    gtk2_gui_delete(sequ_gui *gui);
 

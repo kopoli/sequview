@@ -91,6 +91,50 @@ char *sequ_config_generated_tmpfile_dir_path = NULL;
 /* the used keys of the gui */
 char **sequ_config_gtk_gui_keys=NULL;
 
+/* the default keys */
+static const char *sequ_config_gtk_gui_keys_default[] =
+{
+  "O",           /* open file */
+  "<Control>H",  /* help */
+  "M",           /* maximize */
+  "F",           /* fullscreen */
+  "Home",        /* page_first */
+  "End",         /* page_last */
+  "Page_Down",   /* page_forward */
+  "Page_up",     /* page_back */
+  "C",           /* configuration */
+  "A",           /* about */
+  "<Control>Q",  /* quit */
+  "I",           /* iconify */
+  "Up",          /* scrolling up */
+  "Down",        /*  down */
+  "Left",        /*  left */
+  "Right",       /*  right*/
+  NULL
+};
+
+/* explanations for the above keys */
+const char *sequ_config_gtk_gui_keys_names[] =
+{
+  "Open file",
+  "Help",
+  "Maximize",
+  "Fullscreen",
+  "First page",
+  "Last page",
+  "Forward page",
+  "Back page",
+  "Configuration",
+  "About",
+  "Quit",
+  "Iconify",
+  "Scroll up",
+  "Scroll down",
+  "Scroll left",
+  "Scroll right",
+  NULL
+};
+
 /* the decompress and file list commands used */
 archive_cmd *sequ_config_archive_cmds=NULL;
 
@@ -186,21 +230,18 @@ static void sequ_config_keys_delete()
 void sequ_config_keys_default()
 {
   unsigned int beta,len;
-  extern const char *gtk2_gui_default_keys[];
 
   if(sequ_config_gtk_gui_keys)
     sequ_config_keys_delete();
 
-  for(len=0;gtk2_gui_default_keys[len] != NULL;len++);
+  for(len=0;sequ_config_gtk_gui_keys_default[len] != NULL;len++);
  
   sequ_config_gtk_gui_keys=malloc((len+1)*sizeof(char*));
 
   /* copy the default keys into place */
   for(beta=0;beta<len;beta++)
-  {
-    sequ_config_gtk_gui_keys[beta]=strdup(gtk2_gui_default_keys[beta]);
-    //print_debug("näppäin %d on [%s]\n",beta,sequ_config_gtk_gui_keys[beta]);
-  }
+    sequ_config_gtk_gui_keys[beta]=
+    strdup(sequ_config_gtk_gui_keys_default[beta]);
 
   sequ_config_gtk_gui_keys[len]=NULL;
 }

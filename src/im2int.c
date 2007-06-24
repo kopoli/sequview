@@ -187,6 +187,11 @@ static tvalue im2_blank_image(struct sequ_image *img)
   return TRUE;
 }
 
+static char *im2_get_formats(void)
+{
+  return "N/A, check /usr/lib/imlib2/loaders or similar.";
+}
+
 /* the API for imlib2 */
 const sequ_image_lib im2_lib =
 {
@@ -197,6 +202,7 @@ const sequ_image_lib im2_lib =
   im2_draw,
   im2_resize,
   im2_blank_image,
+  im2_get_formats,
   NULL
 }; 
 

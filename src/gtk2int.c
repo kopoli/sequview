@@ -91,6 +91,9 @@ typedef struct
   /* file currently open */
   char *filename;
 
+  /* the names of the keys for scrolling converted to keycodes */
+  unsigned int scroll_keycodes[4];
+
 } gtk2_gui;
 
 
@@ -116,27 +119,6 @@ static tvalue gtk2_gui_init(struct sequ_gui *gui, int width, int height);
 static tvalue gtk2_gui_run (struct sequ_gui *gui, char *filename);
 static void   gtk2_gui_deinit(struct sequ_gui *gui);
 static int    gtk2_gui_identify();
-
-/************************************************************************/
-/* common keys */
-
-/* the default keys */
-const char *gtk2_gui_default_keys[] =
-{
-  "O",   /* open file */
-  "<Control>H", /* help */
-  "M",   /* maximize */
-  "F",   /* fullscreen */
-  "G",   /* page_first */
-  "L",   /* page_last */
-  "K",   /* page_forward */
-  "H",   /* page_back */
-  "C",   /* configuration */
-  "A",   /* about */
-  "<Control>Q",   /* quit */
-  "I",   /* iconify */
-  NULL
-};
 
 /************************************************************************/
 /* the init functions */
@@ -181,8 +163,8 @@ sequ_gui *gtk2_gui_create(int *argc,char ***argv, int width, int height)
 
   /* initialize imlib */
 #warning katso mikä kirjasto on käytössä
-  //gtkui->lib=(sequ_image_lib *)&gdkpixbuf_lib;
-  gtkui->lib=(sequ_image_lib *)&im2_lib;
+  gtkui->lib=(sequ_image_lib *)&gdkpixbuf_lib;
+  //  gtkui->lib=(sequ_image_lib *)&im2_lib;
   gtkui->lib->init(gdk_x11_get_default_xdisplay());
 
   ret->init(ret,width,height);
@@ -212,7 +194,8 @@ tvalue gtk2_gui_delete(sequ_gui *gui)
 static tvalue     gtk2_gui_create_main_window(sequ_gui *gui);
 static tvalue     gtk2_gui_create_fileselector(sequ_gui *gui);
 static tvalue     gtk2_gui_create_about_dialog();
-static GtkWidget *gtk2_gui_create_main_menu(sequ_gui *gui);
+static GtkWidget *gtk2_gui_create_main_menu(sequ_gui *gui,
+  tvalue update_accels);
 
 static tvalue gtk2_gui_resize_gdk_canvas(sequ_gui *gui,int width,int height);
 static void gtk2_gui_set_window_title(GtkWindow *win,char *filename);
@@ -264,6 +247,12 @@ GTK2_GUI_MENU_CALLBACK(page_backward);
 GTK2_GUI_MENU_CALLBACK(open_about);
 GTK2_GUI_MENU_CALLBACK(open_config);
 GTK2_GUI_MENU_CALLBACK(quit);
+
+/************************************************************************/
+/* other prototypes */
+
+static void gtk2_gui_scrolling_keys_to_codes(sequ_gui *gui);
+static tvalue gtk2_gui_update_keys(sequ_gui *gui);
 
 /************************************************************************/
 /* static (common) widgets. These are common for all instances. */
@@ -690,9 +679,10 @@ static tvalue gtk2_gui_create_main_window(sequ_gui *gui)
       GTK_WIDGET(gtkui->gtk_canvas),&geo,GDK_HINT_MIN_SIZE);
   }  
 
-
   /* create the popup-menu */
-  gtkui->menu=GTK_MENU(gtk2_gui_create_main_menu(gui));
+  gtkui->menu=GTK_MENU(gtk2_gui_create_main_menu(gui,FALSE));
+
+  gtk2_gui_scrolling_keys_to_codes(gui);
 
   /* create the fileselector */
   gtk2_gui_create_fileselector(gui);
@@ -716,16 +706,6 @@ static tvalue gtk2_gui_create_main_window(sequ_gui *gui)
     gdk_window_set_cursor(GTK_WIDGET(gtkui->main)->window,curs);
   }
   
-
-  /* create scrollbars */
-  //  gtkui->scroll=gtk2_gui_create_scrolled_window();
-
-  //  gtk_container_set_border_width(GTK_CONTAINER(gtkui->scroll),10);
-  /*
-  print_debug("%s: tässä on borderia %d\n",THIS_FUNCTION,
-    gtk_container_get_border_width(GTK_CONTAINER(gtkui->scroll)));
-  */
-
   /* create the errorlog */
   IL_OutErr=gtk_error_iolet_create(gtkui->main);
 
@@ -754,7 +734,7 @@ static tvalue gtk2_gui_create_main_window(sequ_gui *gui)
   /* right click the window (eventbox) to popup the menu */
   g_signal_connect_swapped(GTK_OBJECT(eventbox), "button_press_event",
     G_CALLBACK(GTK2_GUI_CALLBACK_FUNC(eventbox_click)),
-    GTK_OBJECT(gtkui->menu));
+    gtkui);
 
   return TRUE;
 }
@@ -873,13 +853,10 @@ static GtkWidget *gtk2_gui_generate_menu(sequ_gui *gui,
 
   while(menu[beta].type != -1)
   {
-    /* argh, a possible security risk */
     strcpy(pathstr,rootname);
     if(menu[beta].type != 0)
-    {
       strcat(pathstr,menu[beta].label);
-      //      print_debug("%s: luodaan itemi %s\n",THIS_FUNCTION,pathstr);
-    }
+
     tmp=gtk2_gui_menu_append_element(GTK_MENU_SHELL(ret),
       &menu[beta],pathstr,gui);
 
@@ -904,8 +881,40 @@ static GtkWidget *gtk2_gui_generate_menu(sequ_gui *gui,
   return ret;
 }
 
+/* rewrite the accelerator map */
+static tvalue gtk2_gui_update_accelmap(gtk2_gui_menu *menu,char *path)
+{
+  char pathstr[512];
+
+  for(unsigned int beta=0; menu[beta].type != -1; beta++)
+  {
+    strcpy(pathstr,path);
+    if(menu[beta].type != 0)
+      strcat(pathstr,menu[beta].label);
+
+    /* a submenu */
+    if(menu[beta].submenu)
+    {
+      strcat(pathstr,"/");
+      gtk2_gui_update_accelmap(menu[beta].submenu,pathstr);
+    }
+
+    /* update the accelerator */
+    if(menu[beta].accelerator)
+    {
+      guint key;
+      GdkModifierType mod;
+
+      gtk_accelerator_parse(menu[beta].accelerator,&key,&mod);
+      gtk_accel_map_change_entry(pathstr,key,mod,FALSE);
+    }
+  }
+  
+  return TRUE;
+}
+
 /* creates the main menu */
-static GtkWidget *gtk2_gui_create_main_menu(sequ_gui *gui)
+static GtkWidget *gtk2_gui_create_main_menu(sequ_gui *gui,tvalue update_accels)
 {
   /* the control submenu */
   gtk2_gui_menu control_submenu[] =
@@ -954,19 +963,53 @@ static GtkWidget *gtk2_gui_create_main_menu(sequ_gui *gui)
     {-1, NULL,     NULL,NULL,NULL}    
   };
 
+  char *menu_name="<main>/";
   GtkAccelGroup  *accels;
-  gtk2_gui *gtkui=(gtk2_gui *)gui->private;
   GtkWidget *ret;
+
+  GTK2_GUI_CONVERT_GTKUI_POINTER();
+
+  /* update the accelerators */
+  if(update_accels)
+  {
+    gtk2_gui_update_accelmap(main_menu,menu_name);
+    return GTK_WIDGET(gtkui->menu);
+  }
+
+  /* creation of the menu */
+  print_debug("maksimoinnin key on %s\n",
+    main_menu[3].accelerator);
 
   accels = gtk_accel_group_new();
 
-  ret = gtk2_gui_generate_menu(gui,main_menu,accels,"<main>/");
+  ret = gtk2_gui_generate_menu(gui,main_menu,accels,menu_name);
 
   gtk_window_add_accel_group(gtkui->main,accels);
 
   gtk_widget_show_all(ret);
 
   return ret;
+}
+
+/************************************************************************/
+/* update the keys */
+
+static void gtk2_gui_scrolling_keys_to_codes(sequ_gui *gui)
+{
+  GTK2_GUI_CONVERT_GTKUI_POINTER();
+
+  for(unsigned int beta=0,gamma=12;beta<4;beta++,gamma++)
+    gtkui->scroll_keycodes[beta]=
+      gdk_keyval_from_name(sequ_config_gtk_gui_keys[gamma]);
+}
+
+/* update the keyconfiguration */
+static tvalue gtk2_gui_update_keys(sequ_gui *gui)
+{
+  gtk2_gui_create_main_menu(gui,TRUE);
+  gtk2_gui_scrolling_keys_to_codes(gui);
+
+  return TRUE;
 }
 
 /************************************************************************/
@@ -1044,22 +1087,7 @@ static gboolean GTK2_GUI_CALLBACK_FUNC(main_window_state_change)(
 
   print_debug("Ikkunan tila vaihtui!\n");
 
-#if 0
-  /* check for maximization */
-  if((((GdkEventWindowState *)event)->new_window_state) & 
-    GDK_WINDOW_STATE_MAXIMIZED)
-    gtkui->main_maximized=TRUE;
-  else
-    gtkui->main_maximized=FALSE;
-
-  /* check for fullscreen -state */
-  if((((GdkEventWindowState *)event)->new_window_state) & 
-    GDK_WINDOW_STATE_FULLSCREEN)
-    gtkui->main_fullscreen=TRUE;
-  else
-    gtkui->main_fullscreen=FALSE;
-#endif
-
+  /* read the new state */ 
   gtkui->main_maximized=(((GdkEventWindowState *)event)->new_window_state) & 
     GDK_WINDOW_STATE_MAXIMIZED;
   gtkui->main_iconified=(((GdkEventWindowState *)event)->new_window_state) &
@@ -1079,16 +1107,19 @@ static gboolean GTK2_GUI_CALLBACK_FUNC(canvas_eventhandler)(
   GtkWidget *widget,GdkEvent *event,gpointer data)
 {
   GTK2_GUI_CONVERT_GUI_POINTER();
-  //  GTK2_GUI_CONVERT_GTKUI_POINTER();
+  GTK2_GUI_CONVERT_GTKUI_POINTER();
 
   //  print_debug("%s: eventti oli %d\n",THIS_FUNCTION,event->type);
 
   if(event->type == GDK_KEY_PRESS)
   {
     char *tmp;
-    const float rel_skip=0.1f;
-    float rel_x=0,rel_y=0;
+    const float rel_skip=0.1f,
+      rel_skip_x[]={0.0f, 0.0f,-rel_skip,rel_skip},
+      rel_skip_y[]={-rel_skip,rel_skip,0.0f, 0.0f};
 
+    float rel_x=0,rel_y=0;
+    
     GdkEventKey *evt=(GdkEventKey *)event;
     print_debug("%s: ja merkkijono oli [%s]\n",THIS_FUNCTION,evt->string);
 
@@ -1096,23 +1127,14 @@ static gboolean GTK2_GUI_CALLBACK_FUNC(canvas_eventhandler)(
     print_debug("%s: sama accelina: [%s]\n",THIS_FUNCTION,tmp);
     nullify(tmp);
 
-    switch(evt->keyval)
-    {
-
-    /* moving the viewport */
-    case GDK_Up:
-      rel_y-=rel_skip;
-      break;
-    case GDK_Down:
-      rel_y+=rel_skip;
-      break;
-    case GDK_Left:
-      rel_x-=rel_skip;
-      break;
-    case GDK_Right:
-      rel_x+=rel_skip;
-      break;
-    }
+    /* move the viewport  */
+    for(unsigned int beta=0;beta<4;beta++)
+      if(evt->keyval == gtkui->scroll_keycodes[beta])
+      {
+        rel_x+=rel_skip_x[beta];
+        rel_y+=rel_skip_y[beta];
+        break;
+      }
 
     if(rel_x != 0.0f || rel_y != 0.0f)
       repaint_canvas(gui,rel_x,rel_y);
@@ -1156,10 +1178,12 @@ static gboolean GTK2_GUI_CALLBACK_FUNC(canvas_eventhandler)(
 static gboolean GTK2_GUI_CALLBACK_FUNC(eventbox_click)(GtkWidget *widget,
   GdkEventButton *event)
 {
+  gtk2_gui *gtkui=(gtk2_gui *)widget;
+
   /* popup the menu */
   if (event->type == GDK_BUTTON_PRESS && event->button == 3)
   {
-    gtk_menu_popup(GTK_MENU(widget),NULL,NULL,NULL,NULL,event->button,
+    gtk_menu_popup(GTK_MENU(gtkui->menu),NULL,NULL,NULL,NULL,event->button,
       event->time);
     return TRUE;
   }
@@ -1174,11 +1198,6 @@ static gboolean GTK2_GUI_CALLBACK_FUNC(eventbox_click)(GtkWidget *widget,
 #ifdef DEBUG
 GTK2_GUI_MENU_CALLBACK(execute_demo)
 {
-  GtkWidget *wnd;
-
-  GTK2_GUI_CONVERT_GUI_POINTER();
-  GTK2_GUI_CONVERT_GTKUI_POINTER();
-
   print_debug("DEMOA!!\n");
 
   print_err("Error: testia demoa.\n");
@@ -1191,6 +1210,7 @@ GTK2_GUI_MENU_CALLBACK(open_fileselector)
   GTK2_GUI_CONVERT_GTKUI_POINTER();
 
   gtk_widget_show_all(gtkui->fileselector);
+  gtk_window_set_position(GTK_WINDOW(gtkui->fileselector),GTK_WIN_POS_CENTER);
 }
 
 GTK2_GUI_MENU_CALLBACK(maximize)
@@ -1307,7 +1327,8 @@ static void GTK2_GUI_CALLBACK_FUNC(get_files)(GtkDialog *dialog,gint arg1,
   /* opening a file */
   if(arg1 == GTK_RESPONSE_ACCEPT)
   {
-    print_debug("Avataan tiedosto [%s]\n",gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog)));
+    print_debug("Avataan tiedosto [%s]\n",
+      gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog)));
 
     gtk2_gui_load_create_canvas(gui,
       gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog)));
@@ -1335,6 +1356,9 @@ static void GTK2_GUI_CALLBACK_FUNC(config_resp)(GtkDialog *dialog,gint arg1,
   {
     /* write the configuration */
     configuration_dialog_update_cfg(gtkui->config);
+
+    /* reapply the keyconfig */
+    gtk2_gui_update_keys(gui);
 
     /* reapply the configuration */
     gtk2_gui_load_create_canvas(gui,NULL);

@@ -56,6 +56,9 @@ typedef struct
   /* other drawing */
   tvalue (*blank_image)(struct sequ_image *);
 
+  /* get supported formats */
+  char *(*get_formats)(void);
+
   void *privdata;
 
 } sequ_image_lib;

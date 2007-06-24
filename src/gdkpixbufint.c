@@ -24,6 +24,7 @@
  ***************************************************************************/
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
@@ -33,6 +34,8 @@
 
 #include "gdkpixbufint.h"
 
+
+static char *gdkpixbuf_get_formats();
 
 static tvalue gdkpixbuf_initialized = FALSE;
 
@@ -44,14 +47,18 @@ typedef struct
 
   XlibRgbDither dither;
 
+  char *formats;
+
 } gdkpixbuf_lib_priv;
 
+#define GDKPIXBUF_LIB_PRIV(library) \
+  ((gdkpixbuf_lib_priv *)library.privdata)
 
 static void gdkpixbuf_deinit(void)
 {
-  free(gdkpixbuf_lib.privdata);
+  nullify(GDKPIXBUF_LIB_PRIV(gdkpixbuf_lib)->formats);
+  nullify(gdkpixbuf_lib.privdata);
 }
-
 
 static tvalue gdkpixbuf_init(Display *disp)
 {
@@ -62,9 +69,11 @@ static tvalue gdkpixbuf_init(Display *disp)
 
   priv=malloc(sizeof(gdkpixbuf_lib_priv));
 
+  /* the private configuration */
   priv->disp=disp;
   priv->interp_type=GDK_INTERP_BILINEAR;
   priv->dither=XLIB_RGB_DITHER_NORMAL;
+  priv->formats=NULL;
 
   gdkpixbuf_lib.privdata=priv;
 
@@ -73,6 +82,8 @@ static tvalue gdkpixbuf_init(Display *disp)
   atexit(gdkpixbuf_deinit);
 
   gdkpixbuf_initialized=TRUE;
+
+  //  print_debug("Tuetut formaatit ovat: %s\n",gdkpixbuf_get_formats());
 
   return TRUE;
 }
@@ -130,16 +141,15 @@ static tvalue gdkpixbuf_blend(struct sequ_image *from, struct sequ_image *to,
   if(!from || !to)
     return FALSE;
 
-  sc_w=(double)((double)w/(double)from->width);
-  sc_h=(double)((double)h/(double)from->height);
+  sc_w=(double)w/from->width;
+  sc_h=(double)h/from->height;
 
   print_debug("%s: orig [%dx%d] given [%dx%d] scw %.2f sch %.2f\n",
     THIS_FUNCTION,from->width,from->height,w,h,sc_w,sc_h);
   
   gdk_pixbuf_scale(GDK_PIXBUF(from->privdata),GDK_PIXBUF(to->privdata),
-    x,y,w,h,x,y,
-    sc_w,sc_h,
-    ((gdkpixbuf_lib_priv *)(gdkpixbuf_lib.privdata))->interp_type);
+    x,y,w,h,x,y,sc_w,sc_h,
+    GDKPIXBUF_LIB_PRIV(gdkpixbuf_lib)->interp_type);
 
   return TRUE;
 }
@@ -153,9 +163,8 @@ static tvalue gdkpixbuf_draw(struct sequ_image *img,XID drw,
 
   if(!img)
     return FALSE;
-
-  disp=((gdkpixbuf_lib_priv *)(gdkpixbuf_lib.privdata))->disp;
-  dither=((gdkpixbuf_lib_priv *)(gdkpixbuf_lib.privdata))->dither;
+  disp=GDKPIXBUF_LIB_PRIV(gdkpixbuf_lib)->disp;
+  dither=GDKPIXBUF_LIB_PRIV(gdkpixbuf_lib)->dither;
 
   /* WARNING, this throws out sw and sh */
   gdk_pixbuf_xlib_render_to_drawable(GDK_PIXBUF(img->privdata),drw,
@@ -196,8 +205,43 @@ static tvalue gdkpixbuf_blank_image(struct sequ_image *img)
   return TRUE;
 }
 
+static char *gdkpixbuf_get_formats()
+{
+  unsigned int length,beta,slen=0;
+  char *ret;
+  GSList *fmts,*pos;
 
-/* the API for imlib2 */
+  if(!gdkpixbuf_initialized)
+    return NULL;
+
+  if(GDKPIXBUF_LIB_PRIV(gdkpixbuf_lib)->formats != NULL)
+    return GDKPIXBUF_LIB_PRIV(gdkpixbuf_lib)->formats;
+
+  fmts=gdk_pixbuf_get_formats();
+
+  length=g_slist_length(fmts);
+
+  /* get the length */
+  for(pos=fmts,beta=0;beta<length;beta++,pos=pos->next)
+    slen+=1+strlen(gdk_pixbuf_format_get_name((GdkPixbufFormat *)pos->data));
+
+  ret=malloc(slen);
+  memset(ret,0,slen);
+
+  /* write the string */
+  for(pos=fmts,beta=0;beta<length;beta++)
+  {
+    strcat(ret,gdk_pixbuf_format_get_name((GdkPixbufFormat *)pos->data));
+    strcat(ret," ");
+    pos=pos->next;
+  }
+
+  GDKPIXBUF_LIB_PRIV(gdkpixbuf_lib)->formats=ret;
+
+  return ret;
+}
+
+/* the API for GDK pixbuf */
 sequ_image_lib gdkpixbuf_lib =
 {
   gdkpixbuf_init,
@@ -207,5 +251,6 @@ sequ_image_lib gdkpixbuf_lib =
   gdkpixbuf_draw,
   gdkpixbuf_resize,
   gdkpixbuf_blank_image,
+  gdkpixbuf_get_formats,
   NULL
 }; 

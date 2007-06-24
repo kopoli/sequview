@@ -2,12 +2,9 @@ CLEANFILES=*~
 
 INCLUDES =
 
-#_comp=${COMPILE}
-#COMPILE=@${_comp}
-
 EXTRA_DIST =  common/commonconf.h common/integers.h \
-  common/check_failure.h gtk2confpages.c \
-  gtk2confpages.h sequview.xpm
+  common/check_failure.h \
+  sequview.xpm
 
 bin_PROGRAMS = sequview
 

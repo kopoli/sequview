@@ -1,5 +1,0 @@
-filelist.c|h:
-  anonymise file_list (like sequ_canvas in im2imagery)
-
-configure.in 
- hookup the gtk_window_fullscreen disabling. (in gtk2int.c)

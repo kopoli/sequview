@@ -2,6 +2,7 @@
 :VERSIOON 0.0.4
 gtk2confpages,gtk2int
  -piirtokirjasto valittavaksi im2int gdkpixbufint
+ -kuvanlataukseen idlecountteri, jos kuvia on vielä bufferissa
 
 070217
 :VERSIOON 0.0.3:
@@ -15,6 +16,10 @@ Xcanvas:
 X -1col&1row ei toimi ?
 README:
  -p�ivitys
+
+BUGEJA:
+-kun siirrytään loppuun, ei siirrytä näyttämään viimeistä kuvaa 
+ (listan koko 3 kun näytetään 2?)
 
 TESTAA:
  Ultimate Spider-Man 103 (2007) (Reiu-DCP).cbr

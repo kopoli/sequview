@@ -81,6 +81,10 @@ static conf_header config_identifiers[] =
      {"about",         CONF_STRING},
      {"quit",          CONF_STRING},
      {"iconify",       CONF_STRING},
+     {"scroll_up",     CONF_STRING},
+     {"scroll_down",   CONF_STRING},
+     {"scroll_left",   CONF_STRING},
+     {"scroll_right",  CONF_STRING},
      {NULL,CONF_INVALID}
    }
   },
@@ -347,6 +351,10 @@ tvalue write_config(const char *filename)
     {2,9,0,{.string=sequ_config_gtk_gui_keys[9]}},
     {2,10,0,{.string=sequ_config_gtk_gui_keys[10]}},
     {2,11,0,{.string=sequ_config_gtk_gui_keys[11]}},
+    {2,12,0,{.string=sequ_config_gtk_gui_keys[12]}},
+    {2,13,0,{.string=sequ_config_gtk_gui_keys[13]}},
+    {2,14,0,{.string=sequ_config_gtk_gui_keys[14]}},
+    {2,15,0,{.string=sequ_config_gtk_gui_keys[15]}},
 
     /* filetypes header */
     {3,0,0,{.string=sequ_config_archive_cmds[0].list}},
