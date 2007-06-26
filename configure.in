@@ -42,70 +42,68 @@ AC_FUNC_MEMCMP
 AC_FUNC_REALLOC
 AC_FUNC_STAT
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([atexit dup2 memset strcasecmp strdup strerror strtol])
+AC_CHECK_FUNCS([atexit dup2 memset strcasecmp strdup strerror strtol strndup])
 
-AC_CHECK_FUNC(strndup, 
-[
-  AC_DEFINE_UNQUOTED(HAVE_STRNDUP,1,[the strndup function])
-  ADD_CFLAGS="-D_GNU_SOURCE"
-])
+#AC_CHECK_FUNC(strndup, 
+#[
+#  AC_DEFINE_UNQUOTED(HAVE_STRNDUP,1,[the strndup function])
+#  ADD_CFLAGS="-D_GNU_SOURCE"
+#])
 
 AC_PATH_X
 
 PKG_PROG_PKG_CONFIG
 
 #########################################################
-
 #imlib2
-#this version is a guess, this program may work with versions lower than this
-imlib2_modules="imlib2 >= 1.1.2"
-PKG_CHECK_MODULES([IM2], [$imlib2_modules])
+
+imlib2_enabled=1
+
+AH_TEMPLATE(HAVE_IMLIB2,[Defined 1 if Imlib2 is enabled.])
+AC_DEFINE_UNQUOTED(HAVE_IMLIB2, 1)
+
+AC_ARG_ENABLE(imlib2,
+  [  --disable-imlib2	  Disables the use of imlib2],
+  [
+    if test ${enableval} = "no"; then
+      imlib2_enabled=0;
+      echo "disabling imlib2"
+    fi
+  ],
+)
+
+if test ${imlib2_enabled} = 1; then
+  imlib2_modules="imlib2 >= 1.1.2"
+  PKG_CHECK_MODULES([IM2], [$imlib2_modules],,
+    AC_DEFINE_UNQUOTED(HAVE_IMLIB2, 0)
+    imlib2_enabled=0;);
+else
+  AC_DEFINE_UNQUOTED(HAVE_IMLIB2, 0)
+fi
 
 #########################################################
-
-#gtk
-#gtk_window_fullscreen() requires at least 2.2.0
-#the new fileselector (file_chooser) requires at least 2.4.0
-#gtk2_fullscreen=1
-
-#AC_ARG_ENABLE(gtk2-fullscreen,
-#  [  --disable-gtk2-fullscreen	Disables gtk_window_fullscreen()],
-#  [
-#    if test ${enableval} = "no"; then
-#      #lower the requirements
-#      gtk2_fullscreen=0;
-#      gtk_modules="gtk+-2.0 >= 2.0.0";
-#      echo "disabling gtk_window_fullscreen()"
-#    fi
-#  ],
-#)
-
-#AH_TEMPLATE(GTK2_WINDOW_FULLSCREEN,[Is function gtk_window_fullscreen() used.])
-#if test ${gtk2_fullscreen} = 1; then
-#  AC_DEFINE_UNQUOTED(GTK2_WINDOW_FULLSCREEN, 1)
-#fi
+#gtk2
 
 gtk_modules="glib-2.0 >= 2.4.0 gtk+-2.0 >= 2.4.0 gdk-pixbuf-xlib-2.0 >= 2.4.0"
 PKG_CHECK_MODULES([GTK2], [$gtk_modules])
 
 #########################################################
 
-#prefix is NONE (if --prefix is not used) until AC_OUTPUT (hmm ?)
-test "$prefix" = "NONE" && prefix="/usr/local"
-
 #versioninformation etc.
 pkg_config="pkg-config"
-imlib2_ver=`${pkg_config} --modversion imlib2`
 gtk2_ver=`${pkg_config} --modversion gtk+-2.0`
+AC_DEFINE_UNQUOTED(GTK2_VERSION, "${gtk2_ver}",[ ])
+
+imlib2_ver="disabled"
+if test ${imlib2_enabled} = 1; then
+  imlib2_ver=`${pkg_config} --modversion imlib2`
+  AC_DEFINE_UNQUOTED(IMLIB2_VERSION, "${imlib2_ver}",[ ])
+fi
 
 #temporary
 real_version="${PACKAGE_VERSION}-b1"
 
 AC_DEFINE_UNQUOTED(REAL_VERSION, "${real_version}",[An irritating workaround.])
-AC_DEFINE_UNQUOTED(IMLIB2_VERSION, "${imlib2_ver}",[ ])
-AC_DEFINE_UNQUOTED(GTK2_VERSION, "${gtk2_ver}",[ ])
-AC_DEFINE_UNQUOTED(PREFIX, "${prefix}",[ ])
-
 
 #########################################################
 

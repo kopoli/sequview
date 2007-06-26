@@ -26,8 +26,15 @@
 #ifndef IM2INT_HEADER
 #define IM2INT_HEADER
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#ifdef HAVE_IMLIB2
+
 #include "imagelib.h"
 
 extern const sequ_image_lib im2_lib;
 
+#endif
 #endif

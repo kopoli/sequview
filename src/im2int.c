@@ -23,6 +23,10 @@
 
  ***************************************************************************/
 
+#include "im2int.h"
+
+#ifdef HAVE_IMLIB2
+
 #include <stdlib.h>
 
 #include <X11/Xlib.h>
@@ -33,8 +37,6 @@
 
 #include "configvars.h"
 #include "imagelib.h"
-
-#include "im2int.h"
 
 static tvalue im2_initialized = FALSE;
 
@@ -206,3 +208,4 @@ const sequ_image_lib im2_lib =
   NULL
 }; 
 
+#endif
