@@ -1,0 +1,6 @@
+#versioninformation of the package for autogen.sh
+
+NAME="Sequview"
+VERSION="0.0.3-b1"
+MAINTAINER="kalle.kankare@tut.fi"
+

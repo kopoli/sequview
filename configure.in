@@ -1,10 +1,11 @@
+AC_INIT(Sequview,0.0.3-b1,kalle.kankare@tut.fi)
 AC_PREREQ(2.58)
-AC_INIT([Sequview],[0.0.3])
 
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET([])
 
 AM_INIT_AUTOMAKE
+#($PACKAGE,$VERSION)
 AC_CONFIG_HEADERS([config.h])
 
 #these are for the summary -section
@@ -43,12 +44,6 @@ AC_FUNC_REALLOC
 AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit dup2 memset strcasecmp strdup strerror strtol strndup])
-
-#AC_CHECK_FUNC(strndup, 
-#[
-#  AC_DEFINE_UNQUOTED(HAVE_STRNDUP,1,[the strndup function])
-#  ADD_CFLAGS="-D_GNU_SOURCE"
-#])
 
 AC_PATH_X
 
@@ -100,20 +95,11 @@ if test ${imlib2_enabled} = 1; then
   AC_DEFINE_UNQUOTED(IMLIB2_VERSION, "${imlib2_ver}",[ ])
 fi
 
-#temporary
-real_version="${PACKAGE_VERSION}-b1"
-
-AC_DEFINE_UNQUOTED(REAL_VERSION, "${real_version}",[An irritating workaround.])
-
 #########################################################
 
 #generate the output
 CFLAGS="$CFLAGS $ADD_CFLAGS $IM2_CFLAGS $GTK2_CFLAGS"
 LDFLAGS="$LDFLAGS $IM2_LIBS $GTK2_LIBS"
-
-#temporary (for make dist testing)
-AC_SUBST(VERSION,${real_version})
-AC_SUBST(PACKAGE_VERSION,${real_version})
 
 AC_CONFIG_FILES([Makefile
 	   src/Makefile])
@@ -124,7 +110,7 @@ AC_OUTPUT
 #the summary
 echo ""
 echo ""
-echo "Configuration summary for ${PACKAGE_NAME} ${real_version}:"
+echo "Configuration summary for ${PACKAGE_STRING}:"
 echo ""
 echo "  Compiler:               ${CC}"
 echo "  Target directory:       ${prefix}"

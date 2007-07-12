@@ -23,6 +23,10 @@
 
  ***************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -92,7 +96,8 @@ char **directory_list(char *path)
   );
 
   /* count the number of files in the directory */
-  for(count=0;(dent=readdir(dir)) != NULL;count++) ;
+  for(count=0;(dent=readdir(dir)) != NULL;count++) 
+    ;
 
   rewinddir(dir);
 

@@ -30,7 +30,7 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #else
-#define REAL_VERSION "Someversion"
+#define PACKAGE_VERSION "Someversion"
 #endif
 
 #include "check_failure.h"
@@ -65,7 +65,7 @@ unsigned int sequ_config_image_cols = 2;
 /* should wide images be drawn as 2 images */
 tvalue sequ_config_draw_wide_as_2 = TRUE;
 
-#define versionstr "Sequview v. " REAL_VERSION
+#define versionstr "Sequview version " PACKAGE_VERSION
 
 char *sequ_config_versioncopy=versionstr "\nKalle Kankare 2004-2007";
 char *sequ_config_gtk2int_mainwindow_title=versionstr;
