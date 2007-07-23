@@ -1,8 +1,8 @@
 PKG_CONFIG_PATH=/home/kopoli/softa/lib/pkgconfig
 LD_LIBRARY_PATH=/home/kopoli/softa/lib
-CFLAGS="-O3 -pipe -ffast-math -fomit-frame-pointer -march=k8 -mtune=k8 -Wall -msse -mmmx -m3dnow -msse2"
-#CFLAGS="-O3 -pipe -ffast-math -fomit-frame-pointer -march=i686 -mtune=athlon-4 -Wall -DDEBUG -mmmx -m3dnow"
-#CFLAGS="-O3 -pipe -ffast-math -fomit-frame-pointer -fmove-all-movables -freduce-all-givs -march=i686 -mtune=athlon-4 -Wall -DDEBUG -mmmx -m3dnow"
+#CFLAGS="-O3 -pipe -ffast-math -fomit-frame-pointer -march=k8 -mtune=k8 -Wall -msse -mmmx -m3dnow -msse2"
+CFLAGS="-O3 -pipe -ffast-math -fomit-frame-pointer -march=i686 -mtune=athlon-4 -Wall -mmmx -m3dnow"
+#CFLAGS="-O3 -pipe -ffast-math -fomit-frame-pointer -fmove-all-movables -freduce-all-givs -march=i686 -mtune=athlon-4 -Wall -mmmx -m3dnow"
 #CC="gcc -std=c99"
 export CFLAGS CC LD_LIBRARY_PATH PKG_CONFIG_PATH LDFLAGS
 
