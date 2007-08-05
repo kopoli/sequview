@@ -27,21 +27,37 @@
 #ifndef PR_GEN_CLI_HEADER
 #define PR_GEN_CLI_HEADER
 
+#include "defines.h"
 #include "getopt_clone.h"
 
 /****************************************************************************
   Defines / Structures / data types
  ****************************************************************************/
 
-typedef struct gen_cli_helpstr
+/* flags for the gen_cli_argument */
+#define GEN_CLI_CMDS_OPTIONAL 1
+#define GEN_CLI_FLAGS_OPTIONAL 2
+
+typedef struct 
 {
 	char *desc,*arg;
 } gen_cli_helpstr;
+
+typedef struct 
+{
+  /* the getopt option */
+  option_clone *options;
+  gen_cli_helpstr *help_strs;
+
+} gen_cli_options;
+
 
 typedef struct gen_cli_argument
 {
   /* the command */
   char *cmd;
+
+  int shortcmd;
 
   /* the command's parameters. For clarification purposes only */
   char *helpcmdparameter;
@@ -49,41 +65,37 @@ typedef struct gen_cli_argument
   /* possible argument after the command/options part. */
   char *helpcmdextra;
 
-  /* the flags for current command */
-  struct option_clone *options;
-
-  /* subcommands */
-  struct gen_cli_argument **subcmds;
-  unsigned int subcmdcount;
-
   /* the helptext for the command */
   char *cmdhelp;
 
-  /* the helptext for the options/flags */
-  gen_cli_helpstr *helptext;
+  /* the options available for the command */
+  gen_cli_options opt;
+
+  /* subcommands */
+  struct gen_cli_argument **subcmds;
+  //  unsigned int subcmdcount;
 
   /* previous argument */
   struct gen_cli_argument *prev;
 
+  unsigned int flags;
+
   /*
-    The handling function of the parsed arguments. pos is the position of 
-    supplied option in options or -1 if the argument is not an option. 
-    parsefunc should return a negative value in case of error and
-    positive otherwise.
+    The handling function of the parsed arguments. The ident is the identifier
+    returned by getopt.parsefunc should return a negative value in case of 
+    error and positive otherwise.
    */
-  int (*parsefunc)(int pos,int argc,char **argv);
+  int (*parsefunc)(int ident,int argc,char **argv,int getopt_ret);
 
 } gen_cli_argument;
 
-
-//extern gen_cli_argument *PR_CliArgs;
 
 /****************************************************************************
   Prototypes
  ****************************************************************************/
 
 /* Recursive help */
-tvalue gen_cli_print_help(char *PR_ProgramName,gen_cli_argument *arg);
+tvalue gen_cli_print_help(char *prog_name,gen_cli_argument *arg);
 
 /* Handle the command-line. This function returns the negative value supplied by
   a parsefunc or 0 if something went wrong in the function. It returns the last

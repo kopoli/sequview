@@ -43,7 +43,7 @@ char *optarg_clone=NULL;
 
 /* usually the position in argv which holds the string 
   pointed to by optarg_clone */
-unsigned int optarg_clone_pos=0;
+unsigned int optarg_pos_clone=0;
 
 /***************************************************************************
   Internals
@@ -67,16 +67,16 @@ static int shortchained=0;
   Functions
  ***************************************************************************/
 
-static char *construct_flag(const struct option_clone opt)
+static char *construct_flag(option_clone *opt)
 {
   char *str=NULL;  
   unsigned int length=1;
   char *prefix=(char *)SHORT_FLAG;
   tvalue uselong=FALSE;
 
-  if(opt.longflag != NULL)
+  if(opt->longflag != NULL)
   {
-    length+=LONG_FLAG_LENGTH+strlen(opt.longflag);
+    length+=LONG_FLAG_LENGTH+strlen(opt->longflag);
     prefix=(char *)LONG_FLAG;
     uselong=TRUE;
   }  
@@ -94,11 +94,11 @@ static char *construct_flag(const struct option_clone opt)
   memset(str,0,length);
   strcat(str,prefix);
   if(uselong==TRUE)
-    strcat(str,opt.longflag);
+    strcat(str,opt->longflag);
   else
   {
     unsigned int pos=strlen(str);
-    str[pos] = opt.shortflag;
+    str[pos] = opt->shortflag;
     str[pos+1] = 0;
   }
 
@@ -106,21 +106,24 @@ static char *construct_flag(const struct option_clone opt)
 }
 
 static tvalue determine_arg(const int argc, char * const argv[], 
-  const struct option_clone opt)
+  option_clone *opt)
 {
   char *cur;
   optarg_clone = NULL;
   nextpos++;
 
+  if(!opt)
+    return FALSE;
+
   /* no argument is requested */
-  if(opt.has_arg == GETOPT_NO_ARGUMENT)
+  if(opt->has_arg == GETOPT_NO_ARGUMENT)
   {
     nextpos--;
     return TRUE;
   }
 
-  else if(opt.has_arg != GETOPT_REQUIRED_ARGUMENT && 
-    opt.has_arg != GETOPT_OPTIONAL_ARGUMENT)
+  else if(opt->has_arg != GETOPT_REQUIRED_ARGUMENT && 
+    opt->has_arg != GETOPT_OPTIONAL_ARGUMENT)
   {
     print_err("Error: The option_clone -struct supplied has invalid has_arg"
       " variable.\n");
@@ -130,7 +133,7 @@ static tvalue determine_arg(const int argc, char * const argv[],
   /* check if the flag was the last argument */
   if(nextpos == (unsigned int) argc) 
   {
-    if(opt.has_arg == GETOPT_REQUIRED_ARGUMENT)
+    if(opt->has_arg == GETOPT_REQUIRED_ARGUMENT)
     {
       char *str = construct_flag(opt);
       if(!str)
@@ -151,7 +154,7 @@ static tvalue determine_arg(const int argc, char * const argv[],
   if(strncmp(cur,LONG_FLAG,LONG_FLAG_LENGTH) == 0 || 
      strncmp(cur,SHORT_FLAG,SHORT_FLAG_LENGTH) == 0)
   {
-    if(opt.has_arg == GETOPT_REQUIRED_ARGUMENT)
+    if(opt->has_arg == GETOPT_REQUIRED_ARGUMENT)
     {
       char *str = construct_flag(opt);
       if(!str)
@@ -182,15 +185,17 @@ static tvalue determine_arg(const int argc, char * const argv[],
 */
 
 
-int getopt_clone(const int argc, char * const argv[], 
-  const struct option_clone *opts)
+int getopt_clone(const int argc, char *const argv[], 
+  option_clone *opts, int *identifier)
 {
   char *cur;
   register unsigned int beta=0;
   int pos=GETOPT_RETURN_FAILURE;
   unsigned int optcount=0;
 
-  ARG_ASSERT(argc < 0 || !argv || !opts,GETOPT_RETURN_FAILURE);
+  ARG_ASSERT(argc < 0 || !argv || !opts || !identifier,GETOPT_RETURN_FAILURE);
+
+  *identifier=0;
 
   /* Let's restart the nextpos if there is no more arguments */
   if(nextpos == (unsigned int)argc)
@@ -202,13 +207,10 @@ int getopt_clone(const int argc, char * const argv[],
   cur=argv[nextpos];
 
   /* count the number of opts */
-  {
-    option_clone tmp;
-    memset(&tmp,0,sizeof(option_clone));
-
-    while(memcmp(&opts[optcount],&tmp,sizeof(option_clone)) != 0)
-      optcount++;
-  }
+  for(optcount=0;
+      opts[optcount].longflag!=NULL && opts[optcount].shortflag!=0;
+      optcount++)
+    ;
 
   /* check if it is a long flag */
   if(strncmp(cur,LONG_FLAG,LONG_FLAG_LENGTH) == 0)
@@ -228,9 +230,10 @@ int getopt_clone(const int argc, char * const argv[],
     {
       print_err("Error: Unknown long-flag: \"%s\" was found.\n",
         cur-LONG_FLAG_LENGTH);
+      return pos;
     }
     /* determine possible arguments */
-    else if(determine_arg(argc,argv,opts[beta]) == FALSE)
+    else if(determine_arg(argc,argv,&opts[beta]) == FALSE)
       pos=GETOPT_RETURN_FAILURE;
       
   }
@@ -247,7 +250,7 @@ int getopt_clone(const int argc, char * const argv[],
         /* check if last in the cluster */
         if(shortchained == (signed int)(strlen(cur)-1))
         {
-          if(determine_arg(argc,argv,opts[beta]) == FALSE)
+          if(determine_arg(argc,argv,&opts[beta]) == FALSE)
             pos=GETOPT_RETURN_FAILURE;
           shortchained=-1;
         }
@@ -255,7 +258,7 @@ int getopt_clone(const int argc, char * const argv[],
            an argument. */
         else if(opts[beta].has_arg == GETOPT_REQUIRED_ARGUMENT)
         {
-          char *str = construct_flag(opts[beta]);
+          char *str = construct_flag(&opts[beta]);
           pos=GETOPT_RETURN_FAILURE;
           if(str)
             print_err("Error: Short-flag \"%s\" should have"
@@ -265,6 +268,7 @@ int getopt_clone(const int argc, char * const argv[],
 
         else
           nextpos--;
+
         break;
       }   
     shortchained++; 
@@ -273,12 +277,20 @@ int getopt_clone(const int argc, char * const argv[],
   else
   {
     optarg_clone = cur;
-    optarg_clone_pos = nextpos;
+    optarg_pos_clone = nextpos;
     pos=GETOPT_RETURN_NORMAL;
   }
 
   nextpos++;
-  return pos;
+
+  *identifier=0;
+
+  if(pos == GETOPT_RETURN_FAILURE || pos == GETOPT_RETURN_NORMAL)
+    return pos;
+
+  *identifier=opts[pos].identifier;
+
+  return GETOPT_RETURN_FLAG;
 }
 
 //#define GETOPT_OWN_DEBUG

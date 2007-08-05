@@ -143,7 +143,8 @@ tvalue iolet_get_line(char *Line, size_t Length);
 tvalue iolet_get_stream(char *Data, size_t Length);
 tvalue iolet_get_eof();
 
-/* Outlet duplication. It would make no sense to gather input from two sources */
+/* Outlet duplication. It would make no sense to gather input from two sources 
+ */
 iolet *iolet_fork_output(iolet * First, iolet * Second);
 
 /* copies all data from from to to. */

@@ -1,4 +1,3 @@
-
 /* some very common types and conventions */
 
 #ifndef DEFINES_HEADER

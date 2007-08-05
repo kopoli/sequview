@@ -25,8 +25,6 @@
  ***************************************************************************/
 #include "commonconf.h"
 
-//#error tänne jokaiseen tuo charin outputtaus
-
 #include <stdio.h>
 #include <string.h>
 
@@ -765,15 +763,3 @@ tvalue iolet_copy_data(iolet *From,iolet *To)
 
   return TRUE;
 }
-
-//#define IL_IOLET_DEBUG
-#ifdef IL_IOLET_DEBUG
-
-int main()
-{
-  print_out("Minun nimeni on kissa ja [%s]\n", "koira");
-
-  return TRUE;
-}
-
-#endif

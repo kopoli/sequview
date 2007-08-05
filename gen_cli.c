@@ -43,34 +43,43 @@
 int gen_cli_parse_args(gen_cli_argument *arg,int argc, char ** argv)
 {
   register unsigned int beta;
-  int ret,pret=1;
+  int ret,pret=1,ident;
 
   ARG_ASSERT(!arg || argc < 0 || !argv,0);
 
-  if(argc > 1)
+  if(argc > 1 && arg->subcmds)
   {
     /* recursively call this function with new data */
-    for(beta=0;beta<arg->subcmdcount;beta++)
-      if(strcmp(argv[1],arg->subcmds[beta]->cmd) == 0)
+    for(beta=0;arg->subcmds[beta] != NULL;beta++)
+      if((strlen(argv[1]) == 1 && argv[1][0] == arg->subcmds[beta]->shortcmd) 
+        || strcmp(argv[1],arg->subcmds[beta]->cmd) == 0)
         return gen_cli_parse_args(arg->subcmds[beta],argc-1,&argv[1]);
   }
 
   beta=1;
 
-  while(1)
-  {
-    ret=getopt_clone(argc,argv,arg->options);
-    if(ret == -1)
-      break;
-    else if(ret == -2)
-      return 0;
+  if(arg->opt.options)
+    while(1)
+    {
+      ret=getopt_clone(argc,argv,arg->opt.options,&ident);
+      /*
+      if(ret == GETOPT_RETURN_LAST)
+        break;
+      else 
+      */
 
-    /* the handling of the commands */
-    if((pret=arg->parsefunc((ret<0) ? -1 : ret,optarg_clone_pos,argv)) < 0)
-      return pret;
+      if(ret == GETOPT_RETURN_FAILURE)
+        return 0;
 
-    beta++;
-  }
+      /* the handling of the commands */
+      if((pret=arg->parsefunc(ident,optarg_pos_clone,argv,ret)) < 0)
+        return pret;
+
+      if(ret == GETOPT_RETURN_LAST)
+        break;
+
+      beta++;
+    }
 
   return pret;
 }
@@ -128,16 +137,18 @@ static void print_explain(unsigned int printpos, char *text,
 
 //rather complex, but saves time when adding and removing flags
 /* Prints the helptext for options in a generated form */
-static tvalue print_flags(struct option_clone *opts,struct gen_cli_helpstr *opts_explain,
+static tvalue print_flags(option_clone *opts,
+  gen_cli_helpstr *opts_explain,
   unsigned int arglen,unsigned int cols)
 {
   register unsigned int beta=0, gamma;
   unsigned int optcount = 0, curlen;
   unsigned int conslen = PRINTSPACELEN+2;
 
-  while(opts[optcount].longflag != NULL || opts[optcount].has_arg != 0
-   || opts[optcount].shortflag != 0)
-    optcount++;
+  if(opts)
+    while(opts[optcount].longflag != NULL || opts[optcount].has_arg != 0
+      || opts[optcount].shortflag != 0)
+      optcount++;
 
   /* do the printing */
   for(beta = 0; beta < optcount; beta++)
@@ -181,14 +192,15 @@ static tvalue print_flags(struct option_clone *opts,struct gen_cli_helpstr *opts
 static unsigned int getprintpos(gen_cli_argument *arg)
 {
   register unsigned int beta = 0;
-  struct option_clone *opts=arg->options;
-  struct gen_cli_helpstr *opts_explain=arg->helptext;
+  struct option_clone *opts=arg->opt.options;
+  gen_cli_helpstr *opts_explain=arg->opt.help_strs;
   unsigned int arglen = 0, optcount = 0, curlen;
   unsigned int conslen = PRINTSPACELEN+2;
 
-  while(opts[optcount].longflag != NULL || opts[optcount].has_arg != 0
-   || opts[optcount].shortflag != 0)
-    optcount++;
+  if(opts)
+    while(opts[optcount].longflag != NULL || opts[optcount].has_arg != 0
+      || opts[optcount].shortflag != 0)
+      optcount++;
 
   //check the maximum length of the flag (with its argument)
   for(beta = 0; beta < optcount; beta++)
@@ -207,20 +219,24 @@ static unsigned int getprintpos(gen_cli_argument *arg)
 
   /* check the lengths of the commands (it is doubtful that they are longer 
      than the flags) */
-  for(beta=0;beta<arg->subcmdcount;beta++)
-  {
-    curlen = conslen + strlen(arg->subcmds[beta]->cmd);
+  if(arg->subcmds)
+    for(beta=0;arg->subcmds[beta];beta++)
+    {
+      curlen = conslen + strlen(arg->subcmds[beta]->cmd);
 
-    if(curlen > arglen)
-      arglen = curlen;
-  }
+      if(arg->subcmds[beta]->shortcmd != 0)
+        curlen+=4;
+
+      if(curlen > arglen)
+        arglen = curlen;
+    }
 
   arglen+=conslen;
 
   return arglen;
 }
 
-static tvalue print_command_path(char *PR_ProgramName,gen_cli_argument *arg)
+static tvalue print_command_path(char *prog_name,gen_cli_argument *arg)
 {
   register gen_cli_argument *beta=arg;
   register unsigned int gamma=0;
@@ -255,36 +271,44 @@ static tvalue print_command_path(char *PR_ProgramName,gen_cli_argument *arg)
     beta=beta->prev;
   }
 
-  print_out("%s ",PR_ProgramName);
+  print_out("%s",prog_name);
   for(gamma=0;gamma<constcount;gamma++)
-    print_out("%s ",cmds[gamma]);
-
-  if(arg->helpcmdparameter != NULL)
-    print_out("%s",arg->helpcmdparameter);
+    print_out(" %s",cmds[gamma]);
 
   nullify(cmds);
   return TRUE;  
 }
 
 /* Recursive help */
-tvalue gen_cli_print_help(char *PR_ProgramName,gen_cli_argument *arg)
+tvalue gen_cli_print_help(char *prog_name,gen_cli_argument *arg)
 {
   unsigned int arglen;
   unsigned int rows,cols;
+  char *format_mand=" <%s>",*format_opt=" [%s]";
+  char *cmd_fmt=format_mand,*flag_fmt=format_mand;
 
-  ARG_ASSERT(!PR_ProgramName || !arg,FALSE);
+  ARG_ASSERT(!prog_name || !arg,FALSE);
 
   print_out("\nUsage: ");
 
   if(arg->cmd != NULL)
-    print_command_path(PR_ProgramName,arg);
+    print_command_path(prog_name,arg);
   else
-    print_out("%s",PR_ProgramName);
+    print_out("%s",prog_name);
 
-  if(arg->subcmdcount > 0)
-    print_out(" <command>");
-  if(arg->options != NULL)
-    print_out(" <options>");
+  if(arg->helpcmdparameter != NULL)
+    print_out(" %s",arg->helpcmdparameter);
+
+  /* check if commands or flags are optional */
+  if(arg->flags & GEN_CLI_CMDS_OPTIONAL)
+    cmd_fmt=format_opt;
+  if(arg->flags & GEN_CLI_FLAGS_OPTIONAL)
+    flag_fmt=format_opt;
+
+  if(arg->subcmds)
+    print_out(cmd_fmt,"command");
+  if(arg->opt.options != NULL)
+    print_out(flag_fmt,"options");
 
   if(arg->helpcmdextra != NULL)
     print_out(" %s",arg->helpcmdextra);
@@ -297,7 +321,7 @@ tvalue gen_cli_print_help(char *PR_ProgramName,gen_cli_argument *arg)
   arglen = getprintpos(arg);
 
   /* print short descriptions of the subcommands */
-  if(arg->subcmdcount != 0)
+  if(arg->subcmds)
   {
     register unsigned int beta,gamma;
     unsigned int curlen=0;
@@ -308,11 +332,14 @@ tvalue gen_cli_print_help(char *PR_ProgramName,gen_cli_argument *arg)
       print_out("C");
     print_out("ommands:\n");
 
-    for(beta=0;beta<arg->subcmdcount;beta++)
+    for(beta=0;arg->subcmds[beta];beta++)
     {
       curlen=PRINTSPACELEN + strlen(arg->subcmds[beta]->cmd);
 
       print_out(PRINTSPACE "%s",arg->subcmds[beta]->cmd);
+
+      if(arg->subcmds[beta]->shortcmd != 0)
+        print_out(" (%c)",arg->subcmds[beta]->shortcmd);
 
       for(gamma = curlen; gamma < arglen; gamma++)
         print_out(" ");
@@ -325,8 +352,11 @@ tvalue gen_cli_print_help(char *PR_ProgramName,gen_cli_argument *arg)
   }
 
   /* print out the flags */
-  print_out("Options:\n");
-  print_flags(arg->options,arg->helptext,arglen,cols);
+  if(arg->opt.options)
+  {
+    print_out("Options:\n");
+    print_flags(arg->opt.options,arg->opt.help_strs,arglen,cols);
+  }
 
   return TRUE;
 }

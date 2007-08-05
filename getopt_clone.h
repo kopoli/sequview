@@ -42,10 +42,12 @@ typedef struct option_clone
   int shortflag;          /* short flag preceded by - */
   unsigned int has_arg;   /* 3 possible values */
 
-}option_clone;
+  int identifier;         /* the identifier which is unique for each option 
+                             and != 0 */
+} option_clone;
 
 extern char *optarg_clone;
-extern unsigned int optarg_clone_pos;
+extern unsigned int optarg_pos_clone;
 
 /****************************************************************************
   Prototypes
@@ -56,7 +58,9 @@ extern unsigned int optarg_clone_pos;
 #define GETOPT_RETURN_LAST      -1  /* there are no more arguments */
 #define GETOPT_RETURN_NORMAL    -3  /* the argument is not a flag */
 
+#define GETOPT_RETURN_FLAG       0
+
 int getopt_clone(const int argc, char * const argv[], 
-  const struct option_clone *opts);
+  option_clone *opts, int *identifier);
 
 #endif
