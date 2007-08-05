@@ -30,6 +30,7 @@
 #include <common/iolet.h>
 #include <common/check_failure.h>
 #include <common/gen_cli.h>
+#include <common/getopt_clone.h>
 #include <common/file.h>
 
 #include "archive.h"
@@ -43,64 +44,27 @@
 
 static char *file_to_open=NULL;
 
+static gen_cli_argument cmdargs;
 
-/* the command-line interface */
-static struct option_clone argopts[] =
+static int argopts_parsefunc(int ident,int argc,char **argv,int getopt_ret)
 {
-  {"purge-temps",'p',0},
-  {"trunc-config",'t',0},
-  {"help",'h',0},
-  {"version",'v',0},
-#ifdef DEBUG
-  {"debug-log",'l',GETOPT_REQUIRED_ARGUMENT},
-#endif
-  {0,0,0}
-};
+  if(getopt_ret == -3 && file_to_open == NULL)
+    file_to_open=argv[argc];
 
-static gen_cli_helpstr argoptshelp[] =
-{
-  {"Removes the possible temporary files left from a crash.",NULL},
-  {"Generates the default \'config\' -file. The old is renamed as"
-   " \'config.old\'",NULL },
-  {"Displays this help.",NULL },
-  {"Displays the version.",NULL},
-#ifdef DEBUG
-  {"Diverts the debugoutput to \"file\".","file"},
-#endif
-};
-
-static int argopts_parsefunc(int pos,int argc,char **argv);
-
-static gen_cli_argument cmdargs =
-{
-  NULL,
-  NULL,
-  "<filename>",
-  argopts,
-  NULL,
-  0,
-  "Sequview is a program for displaying sequences of images and scaling them. "
-  "Usually within a compressed archive.",
-  argoptshelp,
-  NULL,
-  argopts_parsefunc
-};
-
-
-static int argopts_parsefunc(int pos,int argc,char **argv)
-{
-  switch(pos)
+  if(getopt_ret != GETOPT_RETURN_FLAG)
+    return 0;
+  
+  switch(ident)
   {
-
   /* purge temps */
-  case 0:
+  case 1:
     tmpfile_init();
     print_out("Purging temporary files.\n");
     return -1;
   break;
 
   /* truncate config */
-  case 1:
+  case 2:
   {
     char *tmp;
     print_out("Generating the default config.\n");
@@ -122,30 +86,32 @@ static int argopts_parsefunc(int pos,int argc,char **argv)
   break;
 
   /* help */
-  case 2:
+  case 3:
     gen_cli_print_help(argv[0],&cmdargs);
     print_out("Send bug-reports to <kalle.kankare@tut.fi>\n");
     return -1;
   break;
 
   /* version */
-  case 3:
+  case 4:
     print_out("%s\n",sequ_config_gtk2int_mainwindow_title);
     return -1;
   break;
 
   /* possible filename(s) */
   case -1: 
+    /*
     print_debug("argc on tässä %d kun %d ja argv [%s]\n",argc,
-      optarg_clone_pos,argv[optarg_clone_pos]);
+      optarg_pos_clone,argv[optarg_pos_clone]);
 
     file_to_open=argv[optarg_clone_pos];
+    */
 
   break;
 
 #ifdef DEBUG
   /* debug-log */
-  case 4:
+  case 5:
   {
     iolet *tmp;
     CHECK_FAILURE(
@@ -164,7 +130,45 @@ static int argopts_parsefunc(int pos,int argc,char **argv)
   return TRUE;
 }
 
-#if 1
+static gen_cli_argument cmdargs =
+{
+  NULL,
+  0,
+  NULL,
+  "[filename]",
+  "Sequview is a program for displaying sequences of images and scaling them. "
+  "Usually within a compressed archive.",
+  {
+    (option_clone [])
+    {
+      {"purge-temps",'p',0,1},
+      {"trunc-config",'t',0,2},
+      {"help",'h',0,3},
+      {"version",'v',0,4},
+#ifdef DEBUG
+      {"debug-log",'l',GETOPT_REQUIRED_ARGUMENT,5},
+#endif
+      {0,0,0,0}
+    },
+    (gen_cli_helpstr [])
+    {
+      {"Removes the possible temporary files left from a crash.",NULL},
+      {"Generates the default \'config\' -file. The old is renamed as"
+       " \'config.old\'",NULL },
+      {"Displays this help.",NULL },
+      {"Displays the version.",NULL},
+#ifdef DEBUG
+      {"Diverts the debugoutput to \"file\".","file"},
+#endif
+    }
+  },
+  NULL,
+  NULL,
+  GEN_CLI_FLAGS_OPTIONAL,
+  argopts_parsefunc
+};
+
+
 
 /* the main */
 int main (int argc, char ** argv)
@@ -201,65 +205,3 @@ int main (int argc, char ** argv)
 
   return 0;
 }
-
-#else
-
-#include <stdio.h>
-#include <X11/X.h>
-#include "im2int.h"
-#include "imagelist.h"
-
-/* the debugmain */
-int main (int argc, char ** argv)
-{
-  int ret;
-
-  iolet_init();
-
-  if(sequ_config_init() == FALSE)
-    return 1;
-
-  ret=gen_cli_parse_args(&cmdargs,argc,argv);
-
-  if(ret < 0)
-    return 1;
-
-  /* read the configuration file */
-  if(read_config_proper() == FALSE)
-    return 1;
-
-  if(tmpfile_init() == FALSE)
-    return 1;
-
-  {
-    image_list *tst;
-
-    im2_lib.init(XOpenDisplay(NULL));
-
-    tst=imagelist_create(
-      "/home/gobol/koodi/sequview/src/material/angela_001.cbr",
-      (sequ_image_lib *)&im2_lib,3,2,TRUE);
-
-    if(!imagelist_page_set(tst,0))
-      print_err("SHIFTAAMINEN EPÄONNISTUI!!\n");
-
-    getchar();
-      
-    /*
-    if(imagelist_shift_load_images(tst,0,3) != 1)
-      print_err("SHIFTAAMINEN EPÄONNISTUI!!\n");
-    */
-
-    if(!imagelist_load_empty(tst))
-      print_err("LATAAMINEN EPÄONNISTUI!!\n");
-
-    getchar();
-      
-    imagelist_delete(tst);
-  }
-
-
-  return 0;
-}
-
-#endif
