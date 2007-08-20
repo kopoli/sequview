@@ -1,7 +1,7 @@
 /***************************************************************************
-  Name:         archive.h
-  Description:  Interaction with archivers
-  Created:      20060618
+  Name:         imgarch.h
+  Description:  Image archve
+  Created:      20070820 15:55
   Copyright:    (C) 2007 by Kalle Kankare
   Email:        kalle.kankare@tut.fi
 
@@ -20,35 +20,29 @@
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
+ 
  ***************************************************************************/
 
-#ifndef ARCHIVE_HEADER
-#define ARCHIVE_HEADER
+#ifndef IMGARCH_HEADER
+#define IMGARCH_HEADER
+
 
 typedef struct 
 {
-  char *list;
-  char *decompress;
-  unsigned int flags;
-} archive_cmd;
-
-#define ARCHIVE_CMD_ESCAPE_WILDCARDS 1
+  char **images;
+  char **extra;
+} image_archive_filenames;
 
 typedef struct
 {
   char *name;
-  char *magic;
-  unsigned int magic_length;
-} archive_type;
+  char *base;
 
-extern const archive_type archive_supported_formats[];
+  image_archive_filenames iaf;
 
-const archive_type *archive_get_type(char *archive);
+} image_archive;
 
-char **archive_get_list(char *archive, const archive_type *type);
-tvalue archive_get_file(char *archive, const archive_type *type,
-  char *name,char *tofile);
-tvalue archive_process_filenames(char **files, const archive_type *type);
+
+char *tmpdir_init(char *tmpdir_path);
 
 #endif

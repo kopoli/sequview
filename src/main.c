@@ -168,7 +168,7 @@ static gen_cli_argument cmdargs =
   argopts_parsefunc
 };
 
-
+#include "imgarch.h"
 
 /* the main */
 int main (int argc, char ** argv)
@@ -177,12 +177,16 @@ int main (int argc, char ** argv)
 
   iolet_init();
 
+  tmpdir_init(NULL);
+
+  return 0;
+
   if(sequ_config_init() == FALSE)
     return 1;
 
   ret=gen_cli_parse_args(&cmdargs,argc,argv);
 
-  if(ret <= 0)
+  if(ret < 0)
     return 1;
 
   /* read the configuration file */

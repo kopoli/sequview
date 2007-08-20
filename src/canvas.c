@@ -350,7 +350,7 @@ tvalue sequ_canvas_realize(sequ_canvas *seqc, image_list *list)
       beta < lst_count && img[beta].row < seqc->prp.rows;
       beta++)
   {
-  /* scale the images */
+    /* scale the images */
     image_fit(img[beta].w,img[beta].h,
       slot_w*img[beta].wc,slot_h,
       &tmpw,&tmph,0);

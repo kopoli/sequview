@@ -106,7 +106,7 @@ const archive_type *archive_get_type(char *archive)
 
   close(fd);
 
-  /* assumption: there should not be so small (usable) archives */
+  /* there should not be so small (usable) archives */
   if(rlen < maxmagic)
   {
     nullify(buffer);
