@@ -50,10 +50,6 @@ unsigned int sequ_config_imlib_color_usage      = 256;
 int sequ_config_draw_fit      = SEQU_CFG_DRAW_CANVAS_FIT;
 double sequ_config_draw_scale = 0.5;
 
-/* how many images are loaded at most at one time has to be >=1. If
-  sequ_config_images_loaded < sequ_config_images_displayed then 
-  sequ_config_images_loaded = sequ_config_images_displayed. */
-
 /* how many extra images are loaded. The real number of images is thus
    sequ_config_image_rows*sequ_config_image_cols+sequ_config_images_extra */
 unsigned int sequ_config_images_extra = 1;

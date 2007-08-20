@@ -177,12 +177,12 @@ int main (int argc, char ** argv)
 
   iolet_init();
 
+  if(sequ_config_init() == FALSE)
+    return 1;
+
   tmpdir_init(NULL);
 
   return 0;
-
-  if(sequ_config_init() == FALSE)
-    return 1;
 
   ret=gen_cli_parse_args(&cmdargs,argc,argv);
 
