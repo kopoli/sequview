@@ -328,39 +328,21 @@ void *linked_list_get_pos(linked_list * list, unsigned int uiIndex)
 }
 
 /* 
-  Cycles through the list. The idea of this is, that if the argument data is NULL
-  this function returns the data of the first cell. The continuum is that the 
-  returned pointer is inserted into the data -argument and this would return the
-  next cell's data. When the last cell's data was inputted this returns NULL.
-  This also returns NULL if no such data has been found.
+  Cycles through the list.
+  returns the first element if pos == NULL
+  returns pos->Next if pos != NULL
+  returns NULL if pos == list->Last
  */
 
-void *linked_list_cycle(linked_list * list, void *data)
+linked_list_cell *linked_list_cycle(linked_list * list, linked_list_cell *pos)
 {
-  linked_list_cell *This, *next;
-
   ARG_ASSERT(!list, NULL);
 
-  if(data == NULL)
-    return list->First->Data;
+  if(pos == NULL)
+    return list->First;
 
-  This = list->First;
-  next = NULL;
-
-  while(next != list->Last)
-  {
-    next = This->Next;
-
-    if(This->Data == data)
-    {
-      if(This == list->Last)
-        return NULL;
-
-      return next->Data;
-    }
-
-    This = next;
-  }
+  if(pos != list->Last)
+    return pos->Next;
 
   return NULL;
 }
@@ -371,6 +353,7 @@ void *linked_list_cycle(linked_list * list, void *data)
 
 int main()
 {
+  linked_list_cell *pos;
   linked_list *lista;
   char *ptr = NULL;
   char *hauki = "hauki!!!";
@@ -384,14 +367,9 @@ int main()
 
 
   // An example shuffling through the values of the list
-  while(1)
+  while((pos = linked_list_cycle(lista, pos)) != NULL)
   {
-    ptr = linked_list_cycle(lista, ptr);
-
-    if(ptr == NULL)
-      break;
-
-    printf("%d. %s\n", beta, ptr);
+    printf("%d. %s\n", beta, pos->Data);
     beta++;
   }
 

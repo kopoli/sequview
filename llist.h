@@ -27,6 +27,8 @@
 #ifndef IL_LLIST_HEADER
 #define IL_LLIST_HEADER
 
+#include <common/defines.h>
+
 /****************************************************************************
   Defines / Structures / data types
  ****************************************************************************/
@@ -78,6 +80,6 @@ tvalue linked_list_delete_pos(linked_list * list, unsigned int uiIndex);
 void *linked_list_get_pos(linked_list * list, unsigned int uiIndex);
 
 /* Cycle through the list */
-void *linked_list_cycle(linked_list * list, void *data);
+linked_list_cell *linked_list_cycle(linked_list * list, linked_list_cell *pos);
 
 #endif

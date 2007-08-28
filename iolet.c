@@ -239,25 +239,23 @@ static inline tvalue AddStdErr()
 
 void iolet_deinit(void)
 {
+  linked_list_cell *pos=NULL;
   iolet *This = NULL;
 
   if(iolet_initialized == FALSE)
     return;
 
   /* End all iolets */
-  while(1)
+  linked_list_use_error = FALSE;
+  while((pos=linked_list_cycle(IOletList, pos)) != NULL)
   {
-    linked_list_use_error = FALSE;
-    This = linked_list_cycle(IOletList, This);
-    linked_list_use_error = TRUE;
-
-    if(This == NULL)
-      break;
+    This=pos->Data;
 
     /* Let the outlet take care of itself */
     if(This->End != NULL)
       This->End(This);
   }
+  linked_list_use_error = TRUE;
 
   /* Delete the list */
   linked_list_delete(IOletList);

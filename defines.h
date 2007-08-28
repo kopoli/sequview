@@ -43,5 +43,4 @@ typedef unsigned char tvalue;
 # define THIS_FUNCTION ("Some function in " __FILE__ " near line " __LINE__)
 #endif
 
-
 #endif
