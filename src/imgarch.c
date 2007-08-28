@@ -42,7 +42,11 @@
 #include "util.h"
 #include "imgarch.h"
 
-image_archive *image_archive_read(char *name, char *base)
+/***************************************************************************
+  image_archive
+ ***************************************************************************/
+
+image_archive *image_archive_open(char *name, char *base)
 {
   return NULL;
 }
@@ -52,8 +56,159 @@ void image_archive_delete(image_archive *ima)
 
 }
 
+/***************************************************************************
+  archive
+ ***************************************************************************/
 
-/* tmpdir */
+static int strendcasecmp(char *str, char *end)
+{
+  unsigned int elen=strlen(end);
+
+  return strncasecmp(str+strlen(str)-elen,end,elen);
+}
+
+
+static const archive_type2 default_archives[] =
+{
+  {"CBZ/zip","unzip -q","\x50\x4B",0,(char * []){"zip","cbz"}},
+  {"CBR/rar","unrar x","\x52\x61\x72\x21\x1A",0,(char * []){"rar","cbr"}},
+  {"CBG/tar.gz","tar xz -O -f","\x1F\x8B",0,(char * []){"tar.gz","cbg"}},
+  {"CBB/tar.bz2","tar xj -O -f","\x42\x5A\x68\x39\x31",0,
+   (char * []){"tar.bz2","cbb"}},
+  {NULL}
+};
+
+static linked_list *archiver_list=NULL;
+
+tvalue archive_register_type(const archive_type2 *type)
+{
+  archive_type2 *data;
+
+  if(!type)
+    return FALSE;
+
+  data=malloc(sizeof(archive_type2));
+  memcpy(data,type,sizeof(archive_type2));
+
+  linked_list_add_data(archiver_list,data);
+
+  return TRUE;
+}
+
+static void archive_unregister_formats(void)
+{
+  for(linked_list_cell *beta=NULL;
+      (beta=linked_list_cycle(archiver_list,beta)) != NULL;)
+    nullify(beta->Data);
+
+  linked_list_delete(archiver_list);
+}
+
+tvalue archive_register_default_formats()
+{
+  unsigned int beta;
+
+  if(archiver_list)
+    return TRUE;
+
+  archiver_list=linked_list_create();
+
+  for(beta=0;default_archives[beta].name != NULL;beta++)
+    archive_register_type(&default_archives[beta]);
+
+  atexit(archive_unregister_formats);
+
+  return TRUE;
+}
+
+/* determines the type of an archive */
+static archive_type2 *archive_get_type2(char *path)
+{
+  linked_list_cell *beta;
+  archive_type2 *ret;
+  size_t readlen=0,gamma;
+  char *str;
+  int fd,count;
+
+  if(!path || !archiver_list)
+    return NULL;
+
+  /* get the longest magic+offset */
+  for(beta=NULL;(beta=linked_list_cycle(archiver_list,beta)) != NULL;)
+  {
+    ret=beta->Data;
+    gamma=ret->magic_offset+strlen(ret->magic);
+    if(gamma > readlen)
+      readlen=gamma;
+  }
+
+  str=malloc(readlen+1);
+  memset(str,0,readlen);
+
+  if((fd=open(path,O_RDONLY)) == -1)
+    goto badend;
+
+  if((count=read(fd,str,readlen)) == -1)
+    goto badend;
+
+  str[count]=0;
+
+  for(beta=NULL;(beta=linked_list_cycle(archiver_list,beta)) != NULL;)
+  {
+    ret=beta->Data;
+
+    if(ret->magic)
+    {
+      /* skip too short files */
+      if(ret->magic_offset+strlen(ret->magic) > count)
+        continue;
+
+      /* check if the magic bytes are found */
+      if(strncmp(str+ret->magic_offset,ret->magic,strlen(ret->magic)) == 0)
+        break;
+    }
+
+    /* if there are no magic bytes for the format, try to match the suffix */
+    #error tänne näin
+  }
+
+  nullify(str);
+
+  return ret;
+
+ badend: 
+  
+  print_err("Error: Opening/reading file \"%s\" failed: %s\n",path,
+    strerror(errno));
+
+  nullify(str);
+
+  return NULL;
+}
+
+tvalue archive_extract(char *arch_name,char *extract_path)
+{
+  archive_type2 *type;
+
+  if(!arch_name || !extract_path)
+    return FALSE;
+
+  type=archive_get_type2(arch_name);
+
+  if(!type)
+  {
+    print_err("Error: Determining type of file \"%s\" failed.\n",arch_name);
+    return FALSE;
+  }
+
+  print_debug("file %s: tyyppi %s\n",arch_name,type->name);
+
+  return TRUE;
+}
+
+/***************************************************************************
+  tmpdir
+ ***************************************************************************/
 
 static tvalue tmpdir_initialized=FALSE;
 
@@ -61,13 +216,26 @@ static char *tmpdir_name(tvalue only_format);
 static tvalue clean_dir(char *path,tvalue rm_dir, 
   tvalue (*prunefunc)(char *name));
 static void tmpdir_deinit(void);
+static int tmpdir_getpid(char *tmpdir);
 
+/* initializes the tmpdir. if tmpdir_path is NULL creates a new 
+   directory with a name. Otherwise deletes all files within the given 
+   directory. */
 char *tmpdir_init(char *tmpdir_path)
 {
   /* check if the path is already created */
   if(tmpdir_path)
   {
+    int filepid;
     struct stat st;
+
+    /* assure the proper format of the given string */
+    filepid=tmpdir_getpid(tmpdir_path);
+    if(filepid != getpid())
+    {
+      print_err("Error: unknown tmpdir \"%s\"\n",tmpdir_path);
+      return NULL;
+    }
 
     if(stat(tmpdir_path,&st) == -1)
       goto badend;
@@ -85,7 +253,7 @@ char *tmpdir_init(char *tmpdir_path)
   if(!(tmpdir_path=tmpdir_name(FALSE)))
     goto badend;
 
-  if(mkdir(tmpdir_path,0755) == -1)
+  if(!create_directory(tmpdir_path))
     goto badend;
 
   print_debug("Luotiin [%s]\n",tmpdir_path);
@@ -109,21 +277,16 @@ char *tmpdir_init(char *tmpdir_path)
   return NULL;
 }
 
-
+/* removes all unused temporary directories within the tmpdata dir */
 static void tmpdir_deinit(void)
 {
   tvalue tmpdir_filter(char *name)
   {
-    int filepid,count,killret;
+    int filepid,killret;
 
-    char *format=tmpdir_name(TRUE);
+    filepid=tmpdir_getpid(name);
 
-    /* make sure that the file is the appropriate format */
-    count=sscanf(name, format, &filepid);
-
-    nullify(format);
-
-    if(count <= 0)
+    if(filepid == 0)
       return TRUE;
 
     /* check if a process with the parsed pid exists */
@@ -146,7 +309,9 @@ static unsigned int get_dec_len(unsigned int num)
   return ret;
 }
 
-const char *tmpdir_fmt="sqvtmp-%d";
+
+/* generates a name for the temporary directory */
+static const char *tmpdir_fmt="sqvtmp-%d";
 static char *tmpdir_name(tvalue only_format)
 {
   char *ret,*tmp;
@@ -170,11 +335,17 @@ static char *tmpdir_name(tvalue only_format)
   return ret;
 }
 
-static int strendcmp(char *str, char *end)
+/* checks that the string is in the proper format and returns the 
+   parsed pid. */
+static int tmpdir_getpid(char *tmpdir)
 {
-  unsigned int elen=strlen(end);
+  int filepid=0,count;
+  char *format=tmpdir_name(TRUE);
 
-  return strncmp(str+strlen(str)-elen,end,elen);
+  count=sscanf(tmpdir, format, &filepid);
+  nullify(format);
+
+  return filepid;
 }
 
 /* removes all files within a directory. 
@@ -217,8 +388,8 @@ static tvalue clean_dir(char *path,tvalue rm_dir,
 
     if(S_ISDIR(st.st_mode) && !S_ISLNK(st.st_mode))
     {
-      if(strendcmp(files[beta],"/.") == 0 ||
-        strendcmp(files[beta],"/..") == 0)
+      if(strendcasecmp(files[beta],"/.") == 0 ||
+        strendcasecmp(files[beta],"/..") == 0)
         continue;
 
       /* no filter for subdirs */

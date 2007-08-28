@@ -32,4 +32,6 @@ char **stringlist_create(char *str,char delim, unsigned int extra_space);
 
 char **directory_list(char *path);
 
+tvalue create_directory(char *dir);
+
 #endif

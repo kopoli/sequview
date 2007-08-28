@@ -31,6 +31,8 @@
 #include <string.h>
 
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <dirent.h>
 
 #include <common/iolet.h>
@@ -125,4 +127,43 @@ char **directory_list(char *path)
   closedir(dir);
 
   return ret;
+}
+
+tvalue create_directory(char *dir)
+{
+  tvalue created=FALSE;
+  struct stat st;
+
+  print_debug("testataan kansiota %s\n",dir);
+
+  if(stat(dir,&st) == -1)
+  {
+    if(errno == ENOENT)
+    {
+      /* create the directory if not already */
+      if(mkdir(dir,0700) == -1)
+      {
+        print_err("Error: mkdir() failed for path %s: \"%s\"\n",dir,
+          strerror(errno));
+        return FALSE;
+      }
+      created=TRUE;
+    }
+    else
+    {
+      print_err("Error: stat() for directory \"%s\" failed with: \"%s\"\n",
+        dir,strerror(errno)); 
+      return FALSE;
+    }
+  }
+
+  /* make sure that the existing file is a directory */  
+  if(!created && !(st.st_mode & S_IFDIR))
+  {
+    print_err("Error: \"%s\" exists. A directory with the same"
+      " name can't be created.\n",dir);
+    return FALSE;
+  }
+
+  return TRUE;
 }

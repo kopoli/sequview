@@ -42,7 +42,22 @@ typedef struct
 
 } image_archive;
 
+typedef struct
+{
+  char *name;
+  char *decompress_cmd;
+
+  char *magic;
+  int magic_offset;
+  char **suffices;
+
+} archive_type2;
 
 char *tmpdir_init(char *tmpdir_path);
+
+tvalue archive_register_default_formats();
+
+
+tvalue archive_extract(char *arch_name,char *extract_path);
 
 #endif

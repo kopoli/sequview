@@ -32,6 +32,4 @@ tvalue read_config(const char *filename);
 tvalue init_config_files();
 tvalue read_config_proper();
 
-tvalue init_config_files();
-
 #endif

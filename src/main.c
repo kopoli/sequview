@@ -180,10 +180,6 @@ int main (int argc, char ** argv)
   if(sequ_config_init() == FALSE)
     return 1;
 
-  tmpdir_init(NULL);
-
-  return 0;
-
   ret=gen_cli_parse_args(&cmdargs,argc,argv);
 
   if(ret < 0)
@@ -195,6 +191,12 @@ int main (int argc, char ** argv)
 
   if(tmpfile_init() == FALSE)
     return 1;
+
+  archive_register_default_formats();
+
+  archive_extract("testi.rar","poista");
+
+  return 0;
 
   {
     sequ_gui *gui;
