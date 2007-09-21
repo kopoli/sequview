@@ -192,11 +192,13 @@ int main (int argc, char ** argv)
   if(tmpfile_init() == FALSE)
     return 1;
 
+/*
   archive_register_default_formats();
 
   archive_extract("testi.rar","poista");
 
   return 0;
+*/
 
   {
     sequ_gui *gui;

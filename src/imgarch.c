@@ -169,7 +169,7 @@ static archive_type2 *archive_get_type2(char *path)
     }
 
     /* if there are no magic bytes for the format, try to match the suffix */
-    #error tänne näin
+    //#error tänne näin
   }
 
   nullify(str);
