@@ -30,7 +30,6 @@
 #include <common/iolet.h>
 #include <common/check_failure.h>
 #include <common/gen_cli.h>
-#include <common/getopt_clone.h>
 #include <common/file.h>
 
 #include "archive.h"
