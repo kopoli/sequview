@@ -73,7 +73,6 @@ typedef struct gen_cli_argument
 
   /* subcommands */
   struct gen_cli_argument **subcmds;
-  //  unsigned int subcmdcount;
 
   /* previous argument */
   struct gen_cli_argument *prev;
@@ -82,7 +81,7 @@ typedef struct gen_cli_argument
 
   /*
     The handling function of the parsed arguments. The ident is the identifier
-    returned by getopt.parsefunc should return a negative value in case of 
+    returned by getopt. parsefunc should return a negative value in case of 
     error and positive otherwise.
    */
   int (*parsefunc)(int ident,int argc,char **argv,int getopt_ret);

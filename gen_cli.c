@@ -62,11 +62,6 @@ int gen_cli_parse_args(gen_cli_argument *arg,int argc, char ** argv)
     while(1)
     {
       ret=getopt_clone(argc,argv,arg->opt.options,&ident);
-      /*
-      if(ret == GETOPT_RETURN_LAST)
-        break;
-      else 
-      */
 
       if(ret == GETOPT_RETURN_FAILURE)
         return 0;
@@ -326,11 +321,14 @@ tvalue gen_cli_print_help(char *prog_name,gen_cli_argument *arg)
     register unsigned int beta,gamma;
     unsigned int curlen=0;
 
+    /*
     if(arg->cmd != NULL)
       print_out("Subc");
     else
       print_out("C");
-    print_out("ommands:\n");
+    */
+
+    print_out("%sommands:\n", (arg->cmd) ? "Subc" : "C");
 
     for(beta=0;arg->subcmds[beta];beta++)
     {
