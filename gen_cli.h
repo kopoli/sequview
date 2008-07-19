@@ -83,6 +83,9 @@ typedef struct gen_cli_argument
     The handling function of the parsed arguments. The ident is the identifier
     returned by getopt. parsefunc should return a negative value in case of 
     error and positive otherwise.
+
+    In case of a negative value returned, gen_cli_parse_args returns with the
+    same negative value.
    */
   int (*parsefunc)(int ident,int argc,char **argv,int getopt_ret);
 
