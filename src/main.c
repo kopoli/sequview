@@ -88,7 +88,7 @@ static int argopts_parsefunc(int ident,int argc,char **argv,int getopt_ret)
   case 3:
     gen_cli_print_help(argv[0],&cmdargs);
     print_out("Send bug-reports to <kalle.kankare@tut.fi>\n");
-    return -1;
+    return -2;
   break;
 
   /* version */
@@ -182,7 +182,12 @@ int main (int argc, char ** argv)
   ret=gen_cli_parse_args(&cmdargs,argc,argv);
 
   if(ret < 0)
-    return 1;
+  {
+    if(ret == -2) /*  --help */
+      return 0;
+
+    return 1;     /* error */
+  }
 
   /* read the configuration file */
   if(read_config_proper() == FALSE)
