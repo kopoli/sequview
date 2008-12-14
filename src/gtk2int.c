@@ -399,7 +399,8 @@ static tvalue resize_canvas(sequ_gui *gui)
        managers or resize-styles may experience a small flicker if the 
        drawn images are bright (because the default pixmap is black). */
     waiting_redraw=TRUE;
-    g_timeout_add(50,redraw_event_timeout,gui);
+    //    g_timeout_add(50,redraw_event_timeout,gui);
+    g_idle_add(redraw_event_timeout,gui);
   }
 
   return TRUE;
@@ -1209,8 +1210,9 @@ GTK2_GUI_MENU_CALLBACK(open_fileselector)
   GTK2_GUI_CONVERT_GUI_POINTER();
   GTK2_GUI_CONVERT_GTKUI_POINTER();
 
+  gtk_window_set_position(GTK_WINDOW(gtkui->fileselector),
+    GTK_WIN_POS_CENTER_ALWAYS);
   gtk_widget_show_all(gtkui->fileselector);
-  gtk_window_set_position(GTK_WINDOW(gtkui->fileselector),GTK_WIN_POS_CENTER);
 }
 
 GTK2_GUI_MENU_CALLBACK(maximize)
