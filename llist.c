@@ -60,7 +60,7 @@ tvalue linked_list_use_error = TRUE;
   It is always the list->Last->Next.
  */
 
-static const char *IL_LLISTCREATE_ERROR =
+static const char * const IL_LLISTCREATE_ERROR =
  "Error: Could not initialize linked list.\n";
 
 linked_list *linked_list_create()
@@ -116,7 +116,7 @@ tvalue linked_list_delete(linked_list * list)
   return TRUE;
 }
 
-static const char *IL_LLISTDATAADD_ERROR =
+static const char * const IL_LLISTDATAADD_ERROR =
  "Error: Could not add an item to the linked list.\n";
 
 /* Adds an item into the list. */

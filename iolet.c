@@ -344,7 +344,7 @@ tvalue iolet_del(iolet * IO)
   Outputting
  ***************************************************************************/
 
-static const char *ERR_NOFORMAT_OUT =
+static const char * const ERR_NOFORMAT_OUT =
  "Error: Formatted output failed; " "iolet lacks format outputmethod.\n";
 
 /* Outputting formatted output to outlet Out */
