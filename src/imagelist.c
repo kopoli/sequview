@@ -55,7 +55,7 @@ typedef struct
 
 static tvalue imagelist_flush(image_list *list);
 
-inline tvalue imagelist_valid(image_list *list)
+tvalue imagelist_valid(image_list *list)
 {
   return (list && list->positions && list->images && list->privdata &&
     file_list_valid(list->archive));

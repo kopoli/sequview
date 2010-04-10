@@ -57,8 +57,7 @@ typedef struct
 
 } image_list;
 
-
-inline tvalue imagelist_valid(image_list *list);
+tvalue imagelist_valid(image_list *list);
 
 image_list *imagelist_create(image_list *old,char *file,sequ_image_lib *lib,
   unsigned int allocated, unsigned int visible, tvalue wideimages);

@@ -39,9 +39,9 @@ typedef struct
 
 
 void file_list_delete(file_list *list);
-inline tvalue file_list_valid(file_list *list);
+tvalue file_list_valid(file_list *list);
 void file_list_print(file_list *list);
-inline unsigned int get_file_list_count(file_list *list);
+unsigned int get_file_list_count(file_list *list);
 
 file_list *get_file_list(char *filename);
 

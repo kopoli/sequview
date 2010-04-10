@@ -128,7 +128,7 @@ tvalue print_err(const char *format, ...);
 #if (defined DEBUG) || (!defined DEBUG && (__STDC_VERSION__ < 199901L))
 tvalue print_debug(const char *format, ...);
 #else
-# define print_debug(format, ...) 
+# define print_debug(format, ...) do { } while(0)
 #endif
 
 /* Input functions */

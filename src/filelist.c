@@ -58,12 +58,12 @@ void file_list_delete(file_list *list)
   nullify(list);
 }
 
-inline unsigned int get_file_list_count(file_list *list)
+unsigned int get_file_list_count(file_list *list)
 {
   return (list) ? list->count : 0;
 }
 
-inline tvalue file_list_valid(file_list *list)
+tvalue file_list_valid(file_list *list)
 {
   return (list && list->path && list->files);
 }
@@ -208,7 +208,10 @@ print_debug("%s: final count of files %d\n",THIS_FUNCTION,length);
 
 /*****************************************************************************/
 
-
+inline static int scmp(const void *e, const void *t)
+{ 
+  return strcasecmp(*(char **)e,*(char **)t);
+}
 
 /* creates the filelist */
 file_list *get_file_list(char *filename)
@@ -288,9 +291,6 @@ file_list *get_file_list(char *filename)
 
   /* sort the list */
   {
-    inline int scmp(const void *e, const void *t)
-    { return strcasecmp(*(char **)e,*(char **)t); }
-
     beta=0;
     while(ret->files[beta] != NULL)
       beta++;

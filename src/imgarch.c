@@ -277,28 +277,28 @@ char *tmpdir_init(char *tmpdir_path)
   return NULL;
 }
 
+static tvalue tmpdir_filter(char *name)
+{
+  int filepid,killret;
+
+  filepid=tmpdir_getpid(name);
+
+  if(filepid == 0)
+    return TRUE;
+
+  /* check if a process with the parsed pid exists */
+  killret=kill(filepid,0);
+  if((killret < 0 && errno == EPERM) || 
+    (killret == 0 && filepid != getpid()))
+    return TRUE;
+    
+  /* all things cleared up. delete the file */
+  return FALSE;
+}
+
 /* removes all unused temporary directories within the tmpdata dir */
 static void tmpdir_deinit(void)
 {
-  tvalue tmpdir_filter(char *name)
-  {
-    int filepid,killret;
-
-    filepid=tmpdir_getpid(name);
-
-    if(filepid == 0)
-      return TRUE;
-
-    /* check if a process with the parsed pid exists */
-    killret=kill(filepid,0);
-    if((killret < 0 && errno == EPERM) || 
-      (killret == 0 && filepid != getpid()))
-      return TRUE;
-    
-    /* all things cleared up. delete the file */
-    return FALSE;
-  }
-
   clean_dir(sequ_config_generated_tmpfile_dir_path,FALSE,tmpdir_filter);
 }
 
