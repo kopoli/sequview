@@ -1,12 +1,21 @@
 Sequview - sequential image viewer
 
-README Updated 20070625
+Updated 20100411
+Updated 20070625
 
 Description:
 
 Sequview is a program for viewing multiple images within directories or 
-compressed archives.
+compressed archives, euphemism for comic book archives.
 
+This is a rather old project, with quite a bit of bugs. When looking back to
+the implementing of this, I learnt that GUI programming probably should not be
+done in a rather low level language. Perhaps Python would have been a more
+appropriate choice.
+
+The commit history contains indecipherable commit messages as this was
+filtered from a larger repository (which in turn was converted from an earlier
+SVN repository).
 
 Requirements:
 
@@ -48,6 +57,8 @@ make
 
 The name of the generated binary is "sequview". It can be run straight 
 from the src/ -directory.
+
+The source should be compatible for modern gcc compilers as well as clang.
 
 The program generates directory ~/.sequview where it stores the 
 configuration and the temporary files.
